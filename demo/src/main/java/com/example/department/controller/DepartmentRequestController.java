@@ -1,6 +1,7 @@
 package com.example.department.controller;
 import java.util.HashMap;
 import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.ResponseEntity;
@@ -13,11 +14,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import com.example.department.exception.InvalidRequestException;
-import com.example.department.exception.RequestNotFoundException;
-import com.example.department.exception.UnauthorizedRoleException;
 
-import tools.jackson.databind.ObjectMapper;
+import com.example.department.exception.InvalidRequestException;
+import com.example.department.exception.UnauthorizedRoleException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @RestController
 @RequestMapping("/api/department-requests")
@@ -172,10 +172,15 @@ public class DepartmentRequestController {
                     jdbcTemplate.queryForMap(sql, requestId);
 
             ObjectMapper mapper = new ObjectMapper();
-            Map<String, Object> requestData =
-                    mapper.readValue(
-                            dbResult.get("request_data").toString(),
-                            Map.class);
+            Map<String, Object> requestData;
+
+            try {
+                requestData = mapper.readValue(
+                        dbResult.get("request_data").toString(),
+                        Map.class);
+            } catch (Exception e) {
+                throw new InvalidRequestException("Invalid request data format");
+            }
 
             Map<String, Object> response = new HashMap<>();
             response.put("requestId", dbResult.get("request_id"));
