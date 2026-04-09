@@ -106,7 +106,7 @@ public class DeliveryController {
         } catch (EmptyResultDataAccessException e) {
             throw new InvalidRequestException("Request ID does not exist");
         }
-        /* ✅ ADD THIS SAFE CHECK HERE */
+        /*  ADD THIS SAFE CHECK HERE */
         if (requestRow.get("request_data") == null || requestRow.get("status") == null) {
             throw new InvalidRequestException("Invalid or corrupted request record");
         }
@@ -203,7 +203,7 @@ public class DeliveryController {
     public ResponseEntity<String> uploadProofOfReceipt(
             @RequestHeader(value = "Role", required = false) String role,
             @RequestBody Map<String, Object> body) {
-        // ✅ ROLE VALIDATION
+        //  ROLE VALIDATION
         if (role == null || role.trim().isEmpty() ||
             (!"DOCTOR".equalsIgnoreCase(role.trim())
              && !"NURSE".equalsIgnoreCase(role.trim())
@@ -211,7 +211,7 @@ public class DeliveryController {
 
             throw new UnauthorizedRoleException("Not authorized to upload proof");
         }
-        // ✅ INPUT VALIDATION
+        //  INPUT VALIDATION
         if (!body.containsKey("deliveryId")
                 || !body.containsKey("departmentId")
                 || !body.containsKey("fileUri")) {
@@ -230,7 +230,7 @@ public class DeliveryController {
         if (fileUri.trim().isEmpty()) {
             throw new InvalidRequestException("File URI cannot be empty");
         }
-        // ✅ DELIVERY EXISTENCE & STATUS CHECK
+        //  DELIVERY EXISTENCE & STATUS CHECK
         Map<String, Object> deliveryRow;
         try {
             deliveryRow = jdbcTemplate.queryForMap(
@@ -248,7 +248,7 @@ public class DeliveryController {
         if (!"DELIVERED".equalsIgnoreCase(statusObj.toString())) {
             throw new InvalidRequestException("Proof allowed only for DELIVERED delivery");
         }
-        // ✅ DUPLICATE PROOF CHECK
+        //  DUPLICATE PROOF CHECK
         Integer count = jdbcTemplate.queryForObject(
                 "SELECT COUNT(*) FROM proof_of_receipt WHERE delivery_id = ?",
                 Integer.class,
@@ -258,54 +258,13 @@ public class DeliveryController {
             throw new InvalidRequestException("Proof already uploaded");
         }
 
-        // ✅ FINAL INSERT (NO POSSIBLE FAILURE PATH)
+        //  FINAL INSERT (NO POSSIBLE FAILURE PATH)
         jdbcTemplate.update(
                 "INSERT INTO proof_of_receipt (delivery_id, department_id, file_uri, status) " +
                 "VALUES (?, ?, ?, ?)",
                 deliveryId, departmentId, fileUri, "RECEIVED");
 
         return ResponseEntity.ok("Proof of receipt uploaded successfully");
-    }
-    @GetMapping("/deliveries/{deliveryId}/status")
-    public ResponseEntity<Map<String, Object>> viewDeliveryStatus(
-            @RequestHeader(value = "Role", required = false) String role,
-            @PathVariable Integer deliveryId) {
-
-        /* ========= ROLE VALIDATION ========= */
-        if (role == null || role.trim().isEmpty() ||
-            (!"ADMIN".equalsIgnoreCase(role.trim())
-             && !"STORE".equalsIgnoreCase(role.trim())
-             && !"DOCTOR".equalsIgnoreCase(role.trim())
-             && !"NURSE".equalsIgnoreCase(role.trim())
-             && !"DEPARTMENT_HEAD".equalsIgnoreCase(role.trim()))) {
-
-            throw new UnauthorizedRoleException(
-                    "You are not authorized to view delivery status");
-        }
-
-        /* ========= DELIVERY FETCH ========= */
-        Map<String, Object> deliveryRow;
-        try {
-            deliveryRow = jdbcTemplate.queryForMap(
-                    "SELECT delivery_id, request_id, delivered_by, delivered_at, quantity, status " +
-                    "FROM delivery_record WHERE delivery_id = ?",
-                    deliveryId);
-        } catch (EmptyResultDataAccessException e) {
-            throw new InvalidRequestException("Delivery ID does not exist");
-        }
-
-        /* ========= PROOF FETCH ========= */
-        var proofs = jdbcTemplate.queryForList(
-                "SELECT proof_id, department_id, received_at, file_uri, status " +
-                "FROM proof_of_receipt WHERE delivery_id = ?",
-                deliveryId);
-
-        /* ========= FINAL RESPONSE ========= */
-        Map<String, Object> response = new HashMap<>();
-        response.put("delivery", deliveryRow);
-        response.put("proofs", proofs);
-
-        return ResponseEntity.ok(response);
     }
     @PutMapping("/deliveries/{deliveryId}/close")
     public ResponseEntity<String> closeRequest(
