@@ -8,29 +8,32 @@ public class DepartmentRequest {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "request_id")
-    private Long requestId;
+    private Integer requestId;
 
-    @Column(name = "department_id")
-    private Long departmentId;
+    @Column(name = "department_id", nullable = false)
+    private Integer departmentId;
 
-    @Column(name = "request_data")
+    @Column(name = "request_data", columnDefinition = "TEXT", nullable = false)
     private String requestData;
 
-    @Column(name = "status")
+    @Column(nullable = false)
     private String status;
 
-    // getters and setters
+    // getters & setters
 
-    public Long getRequestId() {
+    public Integer getRequestId() {
         return requestId;
     }
 
-    public Long getDepartmentId() {
+    public void setRequestId(Integer requestId) {
+        this.requestId = requestId;
+    }
+
+    public Integer getDepartmentId() {
         return departmentId;
     }
 
-    public void setDepartmentId(Long departmentId) {
+    public void setDepartmentId(Integer departmentId) {
         this.departmentId = departmentId;
     }
 
