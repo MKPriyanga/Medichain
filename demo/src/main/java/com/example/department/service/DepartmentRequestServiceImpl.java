@@ -4,6 +4,7 @@ import com.example.department.entity.DepartmentRequest;
 import com.example.department.exception.InvalidRequestException;
 import com.example.department.exception.UnauthorizedRoleException;
 import com.example.department.repository.DepartmentRequestRepository;
+import com.example.department.repository.DepartmentRepository;   // ✅ added
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,9 +18,13 @@ public class DepartmentRequestServiceImpl implements DepartmentRequestService {
     @Autowired
     private DepartmentRequestRepository repository;
 
+    @Autowired
+    private DepartmentRepository departmentRepository;     // ✅ added
+
     @Override
     public void createRequest(String role, Map<String, Object> request) {
 
+        /* ============ ROLE VALIDATION ============ */
         if (role == null ||
                 (!role.equalsIgnoreCase("DOCTOR")
                  && !role.equalsIgnoreCase("NURSE"))) {
@@ -27,14 +32,25 @@ public class DepartmentRequestServiceImpl implements DepartmentRequestService {
                     "Only Doctor or Nurse can create requests");
         }
 
+        /* ============ BASIC INPUT VALIDATION ============ */
         if (!request.containsKey("departmentId")
                 || !request.containsKey("products")) {
             throw new InvalidRequestException("Invalid input data");
         }
 
+        /* ============ EXTRACT DEPARTMENT ID ============ */
         Integer departmentId =
                 Integer.parseInt(request.get("departmentId").toString());
 
+        /* ============ DEPARTMENT MASTER VALIDATION ============ */
+        boolean departmentExists =
+                departmentRepository.existsById(departmentId);
+
+        if (!departmentExists) {
+            throw new InvalidRequestException("Invalid department");
+        }
+
+        /* ============ EXTRACT PRODUCT DETAILS ============ */
         Map<String, Object> products =
                 (Map<String, Object>) request.get("products");
 
@@ -46,6 +62,7 @@ public class DepartmentRequestServiceImpl implements DepartmentRequestService {
                     "Quantity must be greater than zero");
         }
 
+        /* ============ DUPLICATE REQUEST CHECK ============ */
         boolean exists =
                 repository.existsByDepartmentIdAndStatus(departmentId, "PENDING");
 
@@ -54,6 +71,7 @@ public class DepartmentRequestServiceImpl implements DepartmentRequestService {
                     "A pending request already exists for this department");
         }
 
+        /* ============ CONVERT PRODUCT DETAILS TO JSON ============ */
         ObjectMapper mapper = new ObjectMapper();
         String json;
         try {
@@ -62,6 +80,7 @@ public class DepartmentRequestServiceImpl implements DepartmentRequestService {
             throw new InvalidRequestException("Invalid product data");
         }
 
+        /* ============ SAVE DEPARTMENT REQUEST ============ */
         DepartmentRequest dr = new DepartmentRequest();
         dr.setDepartmentId(departmentId);
         dr.setRequestData(json);
