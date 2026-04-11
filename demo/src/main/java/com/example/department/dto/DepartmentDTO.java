@@ -5,7 +5,6 @@ public class DepartmentDTO {
     private Integer departmentId;
     private String name;
 
-    // ✅ REQUIRED by Jackson
     public DepartmentDTO() {
     }
 

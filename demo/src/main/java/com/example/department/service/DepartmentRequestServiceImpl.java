@@ -4,12 +4,13 @@ import com.example.department.entity.DepartmentRequest;
 import com.example.department.exception.InvalidRequestException;
 import com.example.department.exception.UnauthorizedRoleException;
 import com.example.department.repository.DepartmentRequestRepository;
-import com.example.department.repository.DepartmentRepository;   // ✅ added
+import com.example.department.repository.DepartmentRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 
 @Service
@@ -19,12 +20,12 @@ public class DepartmentRequestServiceImpl implements DepartmentRequestService {
     private DepartmentRequestRepository repository;
 
     @Autowired
-    private DepartmentRepository departmentRepository;     // ✅ added
+    private DepartmentRepository departmentRepository;
 
     @Override
     public void createRequest(String role, Map<String, Object> request) {
 
-        /* ============ ROLE VALIDATION ============ */
+        // ✅ ROLE VALIDATION
         if (role == null ||
                 (!role.equalsIgnoreCase("DOCTOR")
                  && !role.equalsIgnoreCase("NURSE"))) {
@@ -32,17 +33,16 @@ public class DepartmentRequestServiceImpl implements DepartmentRequestService {
                     "Only Doctor or Nurse can create requests");
         }
 
-        /* ============ BASIC INPUT VALIDATION ============ */
+        // ✅ BASIC INPUT VALIDATION
         if (!request.containsKey("departmentId")
                 || !request.containsKey("products")) {
             throw new InvalidRequestException("Invalid input data");
         }
 
-        /* ============ EXTRACT DEPARTMENT ID ============ */
         Integer departmentId =
                 Integer.parseInt(request.get("departmentId").toString());
 
-        /* ============ DEPARTMENT MASTER VALIDATION ============ */
+        // ✅ DEPARTMENT MASTER VALIDATION
         boolean departmentExists =
                 departmentRepository.existsById(departmentId);
 
@@ -50,7 +50,6 @@ public class DepartmentRequestServiceImpl implements DepartmentRequestService {
             throw new InvalidRequestException("Invalid department");
         }
 
-        /* ============ EXTRACT PRODUCT DETAILS ============ */
         Map<String, Object> products =
                 (Map<String, Object>) request.get("products");
 
@@ -62,7 +61,7 @@ public class DepartmentRequestServiceImpl implements DepartmentRequestService {
                     "Quantity must be greater than zero");
         }
 
-        /* ============ DUPLICATE REQUEST CHECK ============ */
+        // ✅ DUPLICATE REQUEST CHECK
         boolean exists =
                 repository.existsByDepartmentIdAndStatus(departmentId, "PENDING");
 
@@ -71,7 +70,7 @@ public class DepartmentRequestServiceImpl implements DepartmentRequestService {
                     "A pending request already exists for this department");
         }
 
-        /* ============ CONVERT PRODUCT DETAILS TO JSON ============ */
+        // ✅ CONVERT PRODUCT DATA TO JSON
         ObjectMapper mapper = new ObjectMapper();
         String json;
         try {
@@ -80,11 +79,13 @@ public class DepartmentRequestServiceImpl implements DepartmentRequestService {
             throw new InvalidRequestException("Invalid product data");
         }
 
-        /* ============ SAVE DEPARTMENT REQUEST ============ */
+        // ✅ SAVE REQUEST WITH NEW FIELDS
         DepartmentRequest dr = new DepartmentRequest();
         dr.setDepartmentId(departmentId);
         dr.setRequestData(json);
+        dr.setQuantity(quantity);                    // ✅ NEW
         dr.setStatus("PENDING");
+        dr.setRequestedAt(LocalDateTime.now());      // ✅ NEW
 
         repository.save(dr);
     }
@@ -103,6 +104,8 @@ public class DepartmentRequestServiceImpl implements DepartmentRequestService {
                                 new InvalidRequestException("Request not found"));
 
         request.setStatus("APPROVED");
+       request.setApprovedBy(1001);
+
         repository.save(request);
     }
 
@@ -120,6 +123,7 @@ public class DepartmentRequestServiceImpl implements DepartmentRequestService {
                                 new InvalidRequestException("Request not found"));
 
         request.setStatus("REJECTED");
+        request.setApprovedBy(null);
         repository.save(request);
     }
 

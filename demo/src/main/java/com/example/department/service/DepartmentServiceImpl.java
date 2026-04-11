@@ -20,47 +20,28 @@ public class DepartmentServiceImpl implements DepartmentService {
     @Override
     public void createDepartment(String role, DepartmentDTO dto) {
 
-        // ✅ ROLE VALIDATION
         if (!"ADMIN".equalsIgnoreCase(role)) {
             throw new UnauthorizedRoleException(
                     "Only Admin can create departments");
         }
 
-        // ✅ INPUT VALIDATION
         if (dto.getName() == null || dto.getName().trim().isEmpty()) {
             throw new InvalidRequestException("Department name is required");
         }
 
-        // ✅ DUPLICATE DEPARTMENT NAME CHECK (NEW)
-        boolean alreadyExists =
-                repository.existsByNameIgnoreCase(dto.getName().trim());
-
-        if (alreadyExists) {
+        if (repository.existsByNameIgnoreCase(dto.getName().trim())) {
             throw new InvalidRequestException("Department already created");
         }
 
-        // ✅ SAVE DEPARTMENT
         Department department = new Department();
         department.setName(dto.getName().trim());
+
+        // ✅ NEW COLUMN SET SAFELY (default behavior)
+        department.setStatus("ACTIVE");
 
         repository.save(department);
     }
 
-    @Override
-    public List<DepartmentDTO> getAllDepartments(String role) {
-
-        if (!"ADMIN".equalsIgnoreCase(role)
-                && !"DEPARTMENT_HEAD".equalsIgnoreCase(role)) {
-            throw new UnauthorizedRoleException("Access denied");
-        }
-
-        return repository.findAll()
-                .stream()
-                .map(dept -> new DepartmentDTO(
-                        dept.getDepartmentId(),
-                        dept.getName()))
-                .toList();
-    }
     @Override
     public DepartmentDTO getDepartmentById(String role, Integer departmentId) {
 
@@ -77,5 +58,20 @@ public class DepartmentServiceImpl implements DepartmentService {
                 department.getDepartmentId(),
                 department.getName()
         );
+    }
+    @Override
+    public List<DepartmentDTO> getAllDepartments(String role) {
+
+        if (!"ADMIN".equalsIgnoreCase(role)
+                && !"DEPARTMENT_HEAD".equalsIgnoreCase(role)) {
+            throw new UnauthorizedRoleException("Access denied");
+        }
+
+        return repository.findAll()
+                .stream()
+                .map(dept -> new DepartmentDTO(
+                        dept.getDepartmentId(),
+                        dept.getName()))
+                .toList();
     }
 }
