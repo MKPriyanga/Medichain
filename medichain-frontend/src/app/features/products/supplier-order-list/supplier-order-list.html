@@ -1,0 +1,138 @@
+<div>
+  <div class="page-header">
+    <h1 class="page-title">Supplier Orders</h1>
+    @if (isProcurement()) {
+      <button class="btn btn-primary btn-sm" (click)="showForm = !showForm; error = ''">
+        {{ showForm ? 'Cancel' : '+ Place Order' }}
+      </button>
+    }
+  </div>
+
+  @if (message) { <div class="alert alert-success py-2 small">{{ message }}</div> }
+  @if (error)   { <div class="alert alert-danger py-2 small">{{ error }}</div> }
+
+  <!-- ── Place Order Form (Procurement / Admin) ─────────────────────────────── -->
+  @if (showForm && isProcurement()) {
+    <div class="card mb-4"><div class="card-body">
+      <h6 class="fw-bold mb-3">Place Supplier Order</h6>
+      <form (ngSubmit)="create()">
+        <div class="row g-3">
+          <div class="col-md-3">
+            <label class="form-label">Supplier <span class="text-danger">*</span></label>
+            <select class="form-select" [(ngModel)]="form.supplierId" name="supplierId" required>
+              <option [value]="0" disabled>Select supplier</option>
+              @for (s of suppliers; track s.supplierId) {
+                <option [value]="s.supplierId">{{ s.name }}</option>
+              }
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Product IDs <span class="text-muted">(comma-separated)</span></label>
+            <input type="text" class="form-control" [(ngModel)]="form.productIdsJson"
+                   name="productIdsJson" placeholder="e.g. 1,2,3" />
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">Quantity <span class="text-danger">*</span></label>
+            <input type="number" class="form-control" [(ngModel)]="form.quantity"
+                   name="quantity" min="1" required />
+          </div>
+          <div class="col-md-3 d-flex align-items-end">
+            <button type="submit" class="btn btn-success w-100" [disabled]="saving">
+              @if (saving) { <span class="spinner-border spinner-border-sm"></span> }
+              @else { Place Order }
+            </button>
+          </div>
+        </div>
+      </form>
+    </div></div>
+  }
+
+  <!-- ── Receive Panel (Warehouse / Admin) ──────────────────────────────────── -->
+  @if (receivingOrderId !== null && isWarehouse()) {
+    <div class="card mb-4 border-success">
+      <div class="card-body">
+        <h6 class="fw-bold mb-3 text-success">Receive Goods — Order #{{ receivingOrderId }}</h6>
+        <p class="text-muted small mb-3">
+          Confirm receipt of the delivered goods. Stock will be added to the selected warehouse automatically.
+        </p>
+        <div class="row g-3 align-items-end">
+          <div class="col-md-4">
+            <label class="form-label">Store In Warehouse <span class="text-danger">*</span></label>
+            <select class="form-select" [(ngModel)]="receiveForm.warehouseId" name="warehouseId" required>
+              <option [value]="0" disabled>Select warehouse</option>
+              @for (w of warehouses; track w.warehouseId) {
+                <option [value]="w.warehouseId">{{ w.name }} — {{ w.location }}</option>
+              }
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Quantity Received <span class="text-danger">*</span></label>
+            <input type="number" class="form-control" [(ngModel)]="receiveForm.quantityReceived"
+                   name="quantityReceived" min="1" />
+          </div>
+          <div class="col-md-auto d-flex gap-2 align-items-end">
+            <button class="btn btn-success" (click)="confirmReceive()" [disabled]="receiving">
+              @if (receiving) { <span class="spinner-border spinner-border-sm me-1"></span> }
+              Confirm Receipt & Update Stock
+            </button>
+            <button class="btn btn-outline-secondary" (click)="cancelReceive()">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ── Orders Table ────────────────────────────────────────────────────────── -->
+  <div class="card"><div class="card-body p-0">
+    @if (loading) {
+      <div class="text-center p-4"><span class="spinner-border text-primary"></span></div>
+    } @else {
+      <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Supplier</th>
+            <th>Product IDs</th>
+            <th>Quantity</th>
+            <th>Status</th>
+            <th>Ordered At</th>
+            <th>Received At</th>
+            @if (isWarehouse()) { <th>Actions</th> }
+          </tr>
+        </thead>
+        <tbody>
+          @for (o of orders; track o.orderId) {
+            <tr>
+              <td class="text-muted small">{{ o.orderId }}</td>
+              <td class="fw-semibold">{{ supplierName(o.supplierId) }}</td>
+              <td class="text-muted small">{{ o.productIdsJson }}</td>
+              <td>{{ o.quantity }}</td>
+              <td>
+                <span class="status-badge" [ngClass]="statusClass(o.status)">{{ o.status }}</span>
+              </td>
+              <td class="text-muted small">{{ o.orderedAt | date:'dd MMM yyyy' }}</td>
+              <td class="text-muted small">{{ o.receivedAt ? (o.receivedAt | date:'dd MMM yyyy') : '—' }}</td>
+              @if (isWarehouse()) {
+                <td>
+                  @if (o.status === 'PLACED') {
+                    <button class="btn btn-success btn-sm"
+                            (click)="openReceive(o.orderId!, o.quantity)">
+                      Receive Stock
+                    </button>
+                  } @else {
+                    <span class="text-muted small">—</span>
+                  }
+                </td>
+              }
+            </tr>
+          }
+        </tbody>
+      </table>
+      </div>
+      @if (orders.length === 0) {
+        <div class="empty-state"><p>No supplier orders yet.</p></div>
+      }
+    }
+  </div></div>
+</div>

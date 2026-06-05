@@ -1,0 +1,293 @@
+<div>
+  <div class="page-header">
+    <h1 class="page-title">Welcome back, {{ name }}</h1>
+    <span class="badge bg-primary">{{ role }}</span>
+  </div>
+
+  <!-- Stat cards -->
+  <div class="row g-3 mb-4">
+    @if (stats.requests > 0 || role === 'ADMIN' || role === 'DEPARTMENT_HEAD') {
+      <div class="col-6 col-md-3">
+        <div class="card p-3 h-100" style="border-left:4px solid #0d6efd">
+          <div class="text-muted small mb-1">Total Requests</div>
+          <div style="font-size:32px;font-weight:700;color:#0d6efd">{{ stats.requests }}</div>
+          <a routerLink="/requests/all" class="small text-primary mt-2 d-inline-block">View all →</a>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="card p-3 h-100" style="border-left:4px solid #ffc107">
+          <div class="text-muted small mb-1">Pending Approval</div>
+          <div style="font-size:32px;font-weight:700;color:#ffc107">{{ stats.pending }}</div>
+          <a routerLink="/requests/approve" class="small text-warning mt-2 d-inline-block">Review →</a>
+        </div>
+      </div>
+    }
+
+    @if (stats.deliveries > 0 || role === 'WAREHOUSE' || role === 'AUDITOR') {
+      <div class="col-6 col-md-3">
+        <div class="card p-3 h-100" style="border-left:4px solid #198754">
+          <div class="text-muted small mb-1">Deliveries</div>
+          <div style="font-size:32px;font-weight:700;color:#198754">{{ stats.deliveries }}</div>
+          <a routerLink="/deliveries" class="small text-success mt-2 d-inline-block">View all →</a>
+        </div>
+      </div>
+    }
+
+    <!-- WAREHOUSE: Approved requests awaiting dispatch -->
+    @if (role === 'WAREHOUSE' || role === 'ADMIN') {
+      <div class="col-6 col-md-3">
+        <div class="card p-3 h-100" [style]="'border-left:4px solid ' + (stats.approvedRequests > 0 ? '#fd7e14' : '#6c757d')">
+          <div class="text-muted small mb-1">Active Requests</div>
+          <div [style]="'font-size:32px;font-weight:700;color:' + (stats.approvedRequests > 0 ? '#fd7e14' : '#6c757d')">
+            {{ stats.approvedRequests }}
+          </div>
+          <span class="small text-muted">Approved / In Progress</span>
+        </div>
+      </div>
+    }
+
+    <!-- DEPARTMENT_HEAD: In-transit deliveries awaiting confirmation -->
+    @if (role === 'DEPARTMENT_HEAD' || role === 'ADMIN') {
+      <div class="col-6 col-md-3">
+        <div class="card p-3 h-100" [style]="'border-left:4px solid ' + (stats.inTransit > 0 ? '#0dcaf0' : '#6c757d')">
+          <div class="text-muted small mb-1">In-Transit Deliveries</div>
+          <div [style]="'font-size:32px;font-weight:700;color:' + (stats.inTransit > 0 ? '#0dcaf0' : '#6c757d')">
+            {{ stats.inTransit }}
+          </div>
+          <span class="small text-muted">Awaiting your confirmation</span>
+          <a routerLink="/deliveries" class="small d-inline-block ms-2" style="color:#0dcaf0">Confirm →</a>
+        </div>
+      </div>
+    }
+
+    @if (stats.products > 0 || role === 'PROCUREMENT') {
+      <div class="col-6 col-md-3">
+        <div class="card p-3 h-100" style="border-left:4px solid #6f42c1">
+          <div class="text-muted small mb-1">Products</div>
+          <div style="font-size:32px;font-weight:700;color:#6f42c1">{{ stats.products }}</div>
+          <a routerLink="/products" class="small text-purple mt-2 d-inline-block">View all →</a>
+        </div>
+      </div>
+    }
+    @if (stats.warehouses > 0 || role === 'WAREHOUSE') {
+      <div class="col-6 col-md-3">
+        <div class="card p-3 h-100" style="border-left:4px solid #fd7e14">
+          <div class="text-muted small mb-1">Warehouses</div>
+          <div style="font-size:32px;font-weight:700;color:#fd7e14">{{ stats.warehouses }}</div>
+          <a routerLink="/warehouse" class="small text-warning mt-2 d-inline-block">View all →</a>
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- Quick actions by role -->
+  <div class="row g-3 mb-4">
+    <div class="col-12">
+      <div class="card p-3">
+        <h6 class="fw-bold mb-3">Quick Actions</h6>
+        <div class="d-flex flex-wrap gap-2">
+          @if (role === 'DOCTOR' || role === 'NURSE') {
+            <a routerLink="/requests/my" class="btn btn-primary btn-sm">My Requests</a>
+            <a routerLink="/notifications" class="btn btn-outline-secondary btn-sm">Notifications</a>
+          }
+          @if (role === 'DEPARTMENT_HEAD') {
+            <a routerLink="/requests/approve" class="btn btn-warning btn-sm text-dark">Approve Requests</a>
+            <a routerLink="/requests/all" class="btn btn-outline-primary btn-sm">All Requests</a>
+            <a routerLink="/deliveries" class="btn btn-outline-info btn-sm">Confirm Deliveries</a>
+          }
+          @if (role === 'WAREHOUSE') {
+            <a routerLink="/inventory" class="btn btn-primary btn-sm">Inventory</a>
+            <a routerLink="/deliveries" class="btn btn-success btn-sm">Deliveries</a>
+            <a routerLink="/stock" class="btn btn-outline-secondary btn-sm">Stock Movements</a>
+          }
+          @if (role === 'PROCUREMENT') {
+            <a routerLink="/products" class="btn btn-primary btn-sm">Products</a>
+            <a routerLink="/suppliers" class="btn btn-outline-primary btn-sm">Suppliers</a>
+            <a routerLink="/invoices" class="btn btn-outline-warning btn-sm">Invoices</a>
+            <a routerLink="/payments" class="btn btn-outline-success btn-sm">Payments</a>
+          }
+          @if (role === 'AUDITOR') {
+            <a routerLink="/kpis" class="btn btn-primary btn-sm">KPI Dashboard</a>
+            <a routerLink="/reports" class="btn btn-outline-primary btn-sm">Reports</a>
+            <a routerLink="/audit-packages" class="btn btn-outline-secondary btn-sm">Audit Packages</a>
+          }
+          @if (role === 'ADMIN') {
+            <a routerLink="/users" class="btn btn-primary btn-sm">Users</a>
+            <a routerLink="/departments" class="btn btn-outline-primary btn-sm">Departments</a>
+            <a routerLink="/requests/all" class="btn btn-outline-warning btn-sm">All Requests</a>
+            <a routerLink="/reports" class="btn btn-outline-secondary btn-sm">Reports</a>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WAREHOUSE: Active requests (APPROVED + PROCESSING) -->
+  @if (role === 'WAREHOUSE') {
+    <div class="card mb-4">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h6 class="fw-bold mb-0">
+            📦 Active Department Requests
+            <span class="badge bg-warning text-dark ms-2">{{ approvedRequests.length }}</span>
+          </h6>
+          <a routerLink="/deliveries" class="btn btn-sm btn-success">Create Delivery →</a>
+        </div>
+
+        @if (requestMessage) { <div class="alert alert-success py-2 small mb-3">{{ requestMessage }}</div> }
+        @if (requestError)   { <div class="alert alert-danger py-2 small mb-3">{{ requestError }}</div> }
+
+        @if (approvedRequests.length === 0) {
+          <p class="text-muted small mb-0">No active requests at the moment.</p>
+        } @else {
+          <div class="table-responsive">
+          <table class="table table-hover table-sm mb-0">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Department</th>
+                <th>Products</th>
+                <th>Qty</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (r of approvedRequests; track r.requestId) {
+                <tr>
+                  <td class="text-muted small">#{{ r.requestId }}</td>
+                  <td>
+                    <span class="fw-semibold">{{ deptName(r.departmentId) }}</span>
+                    <span class="text-muted small d-block">#{{ r.departmentId }}</span>
+                  </td>
+                  <td>
+                    @for (name of productNames(r.productIdsJson); track name) {
+                      <span class="badge bg-light text-dark border me-1 mb-1">{{ name }}</span>
+                    }
+                  </td>
+                  <td>{{ r.quantity }}</td>
+                  <td class="text-muted small">{{ r.requestedAt | date:'dd MMM yyyy' }}</td>
+                  <td>
+                    <span class="status-badge" [ngClass]="'status-' + r.status">{{ r.status }}</span>
+                  </td>
+                  <td>
+                    @if (r.status === 'APPROVED') {
+                      <button class="btn btn-sm btn-warning text-dark"
+                              (click)="markProcessing(r.requestId)"
+                              [disabled]="actingRequest === r.requestId">
+                        @if (actingRequest === r.requestId) {
+                          <span class="spinner-border spinner-border-sm"></span>
+                        } @else {
+                          🔄 Mark Processing
+                        }
+                      </button>
+                    } @else if (r.status === 'PROCESSING') {
+                      <button class="btn btn-sm btn-success"
+                              (click)="markCompleted(r.requestId)"
+                              [disabled]="actingRequest === r.requestId">
+                        @if (actingRequest === r.requestId) {
+                          <span class="spinner-border spinner-border-sm"></span>
+                        } @else {
+                          ✅ Mark Completed
+                        }
+                      </button>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- DEPARTMENT_HEAD: In-transit deliveries awaiting confirmation -->
+  @if (role === 'DEPARTMENT_HEAD' && inTransitDeliveries.length > 0) {
+    <div class="card mb-4 border-info">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h6 class="fw-bold mb-0 text-info">
+            🚚 In-Transit Deliveries — Awaiting Your Confirmation
+            <span class="badge bg-info ms-2">{{ inTransitDeliveries.length }}</span>
+          </h6>
+          <a routerLink="/deliveries" class="btn btn-sm btn-outline-info">Go to Deliveries →</a>
+        </div>
+        <p class="text-muted small mb-3">
+          These deliveries have been dispatched from the warehouse. Click "Confirm Receipt" on the
+          <a routerLink="/deliveries">Deliveries page</a> once goods arrive.
+        </p>
+        <div class="table-responsive">
+        <table class="table table-hover table-sm mb-0">
+          <thead>
+            <tr><th>Delivery ID</th><th>Request</th><th>Qty</th><th>Dispatched By</th><th>Date</th></tr>
+          </thead>
+          <tbody>
+            @for (d of inTransitDeliveries; track d.deliveryId) {
+              <tr>
+                <td class="text-muted small">#{{ d.deliveryId }}</td>
+                <td>Request #{{ d.requestId }}</td>
+                <td>{{ d.quantity }}</td>
+                <td class="text-muted small">{{ d.deliveredBy }}</td>
+                <td class="text-muted small">{{ d.deliveredAt | date:'dd MMM yyyy' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Recent requests table -->
+  @if (recentRequests.length > 0) {
+    <div class="card">
+      <div class="card-body">
+        <h6 class="fw-bold mb-3">Recent Requests</h6>
+        <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead>
+            <tr>
+              <th>ID</th><th>Department</th><th>Quantity</th><th>Status</th><th>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (r of recentRequests; track r.requestId) {
+              <tr>
+                <td>#{{ r.requestId }}</td>
+                <td>
+                  <span class="fw-semibold">{{ deptName(r.departmentId) }}</span>
+                  <span class="text-muted small d-block">#{{ r.departmentId }}</span>
+                </td>
+                <td>{{ r.quantity }}</td>
+                <td><span class="status-badge" [ngClass]="'status-' + r.status">{{ r.status }}</span></td>
+                <td class="text-muted small">{{ r.requestedAt | date:'dd MMM yyyy' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Workflow info for new users -->
+  @if (role === 'DOCTOR' || role === 'NURSE') {
+    <div class="card mt-4">
+      <div class="card-body">
+        <h6 class="fw-bold mb-3">How it works</h6>
+        <div class="d-flex flex-wrap gap-3 align-items-center">
+          <div class="text-center"><div class="badge bg-primary rounded-circle" style="width:32px;height:32px;line-height:32px;font-size:14px">1</div><div class="small mt-1">Submit<br>Request</div></div>
+          <div class="text-muted">→</div>
+          <div class="text-center"><div class="badge bg-warning rounded-circle" style="width:32px;height:32px;line-height:32px;font-size:14px">2</div><div class="small mt-1">Dept Head<br>Approves</div></div>
+          <div class="text-muted">→</div>
+          <div class="text-center"><div class="badge bg-info rounded-circle" style="width:32px;height:32px;line-height:32px;font-size:14px">3</div><div class="small mt-1">Warehouse<br>Dispatches</div></div>
+          <div class="text-muted">→</div>
+          <div class="text-center"><div class="badge bg-success rounded-circle" style="width:32px;height:32px;line-height:32px;font-size:14px">4</div><div class="small mt-1">Dept Head<br>Confirms</div></div>
+        </div>
+      </div>
+    </div>
+  }
+</div>

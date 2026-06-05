@@ -1,0 +1,42 @@
+<div>
+  <div class="page-header">
+    <h1 class="page-title">Notifications <span class="badge bg-danger ms-2">{{ unreadCount() }}</span></h1>
+    @if (unreadCount() > 0) {
+      <button class="btn btn-outline-primary btn-sm" (click)="markAllRead()">Mark All Read</button>
+    }
+  </div>
+  @if (message) { <div class="alert alert-success py-2 small">{{ message }}</div> }
+  @if (error) { <div class="alert alert-danger py-2 small">{{ error }}</div> }
+
+  @if (loading) { <div class="text-center p-4"><span class="spinner-border text-primary"></span></div> }
+  @else if (notifications.length === 0) {
+    <div class="empty-state"><p>No notifications yet.</p></div>
+  } @else {
+    <div class="d-flex flex-column gap-2">
+      @for (n of notifications; track n.id) {
+        <div class="notification-item" [class.unread]="n.status === 'UNREAD'">
+          <div class="d-flex justify-content-between align-items-start">
+            <div class="flex-grow-1">
+              <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="badge" [ngClass]="{
+                  'bg-primary': n.category === 'REQUEST',
+                  'bg-warning text-dark': n.category === 'INVENTORY',
+                  'bg-success': n.category === 'DELIVERY',
+                  'bg-info text-dark': n.category === 'BILLING'
+                }">{{ n.category }}</span>
+                @if (n.status === 'UNREAD') {
+                  <span class="badge bg-danger" style="font-size:10px">NEW</span>
+                }
+              </div>
+              <p class="mb-1" style="font-size:14px">{{ n.message }}</p>
+              <small class="text-muted">{{ n.createdAt | date:'dd MMM yyyy, HH:mm' }}</small>
+            </div>
+            @if (n.status === 'UNREAD') {
+              <button class="btn btn-sm btn-outline-secondary ms-3" (click)="markRead(n.id)">Mark Read</button>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

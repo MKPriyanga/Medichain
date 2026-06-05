@@ -1,0 +1,47 @@
+<div>
+  <div class="page-header">
+    <h1 class="page-title">Suppliers</h1>
+    <button class="btn btn-primary btn-sm" (click)="showForm = !showForm">{{ showForm ? 'Cancel' : '+ Add Supplier' }}</button>
+  </div>
+  @if (message) { <div class="alert alert-success py-2 small">{{ message }}</div> }
+  @if (error) { <div class="alert alert-danger py-2 small">{{ error }}</div> }
+  @if (showForm) {
+    <div class="card mb-4"><div class="card-body">
+      <h6 class="fw-bold mb-3">Add Supplier</h6>
+      <form (ngSubmit)="create()">
+        <div class="row g-3">
+          <div class="col-md-4"><label class="form-label">Name</label>
+            <input type="text" class="form-control" [(ngModel)]="form.name" name="name" required /></div>
+          <div class="col-md-5"><label class="form-label">Contact Info</label>
+            <input type="text" class="form-control" [(ngModel)]="form.contactInfo" name="contactInfo" placeholder="Email / Phone / Address" /></div>
+          <div class="col-md-3 d-flex align-items-end">
+            <button type="submit" class="btn btn-success w-100" [disabled]="saving">
+              @if (saving) { <span class="spinner-border spinner-border-sm"></span> } @else { Save }
+            </button>
+          </div>
+        </div>
+      </form>
+    </div></div>
+  }
+  <div class="card"><div class="card-body p-0">
+    @if (loading) { <div class="text-center p-4"><span class="spinner-border text-primary"></span></div> }
+    @else {
+      <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead><tr><th>ID</th><th>Name</th><th>Contact Info</th><th>Status</th></tr></thead>
+        <tbody>
+          @for (s of suppliers; track s.supplierId) {
+            <tr>
+              <td class="text-muted small">{{ s.supplierId }}</td>
+              <td class="fw-semibold">{{ s.name }}</td>
+              <td class="text-muted">{{ s.contactInfo }}</td>
+              <td><span class="status-badge" [ngClass]="'status-' + s.status">{{ s.status }}</span></td>
+            </tr>
+          }
+        </tbody>
+      </table>
+      </div>
+      @if (suppliers.length === 0) { <div class="empty-state"><p>No suppliers found.</p></div> }
+    }
+  </div></div>
+</div>

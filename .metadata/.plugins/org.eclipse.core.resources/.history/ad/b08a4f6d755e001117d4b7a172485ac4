@@ -1,0 +1,10 @@
+spring.application.name=config-server
+server.port=7999
+
+spring.profiles.active=native
+spring.cloud.config.server.native.search-locations=file:///C:/Sohom/Project/Mini%20Project/Medichain_Full_Project-main/Medichain_Full_Project-main/backend/config-repo-main/config-repo-main/config-repo
+eureka.client.service-url.defaultZone=http://localhost:8761/eureka/
+eureka.instance.prefer-ip-address=true
+eureka.instance.ip-address=127.0.0.1
+
+management.endpoints.web.exposure.include=health,info,refresh

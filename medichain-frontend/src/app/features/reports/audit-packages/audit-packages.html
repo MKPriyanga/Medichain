@@ -1,0 +1,123 @@
+<div>
+  <div class="page-header">
+    <h1 class="page-title">Audit Packages</h1>
+  </div>
+
+  @if (message) { <div class="alert alert-success py-2 small">{{ message }}</div> }
+  @if (error)   { <div class="alert alert-danger py-2 small">{{ error }}</div> }
+
+  <!-- Generate panel -->
+  <div class="card mb-4"><div class="card-body">
+    <h6 class="fw-bold mb-3">Generate Audit Package</h6>
+    <p class="text-muted small mb-3">
+      Select a date range and scope. The system bundles all records for the period into a
+      compliance archive.
+    </p>
+    <div class="row g-3 align-items-end">
+      <div class="col-md-3">
+        <label class="form-label">Period Start</label>
+        <input type="datetime-local" class="form-control" [(ngModel)]="form.start" />
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Period End</label>
+        <input type="datetime-local" class="form-control" [(ngModel)]="form.end" />
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Scope</label>
+        <select class="form-select" [(ngModel)]="form.scope">
+          @for (s of scopes; track s) { <option [value]="s">{{ s }}</option> }
+        </select>
+      </div>
+      <div class="col-md-3">
+        <button class="btn btn-primary" (click)="generate()" [disabled]="generating">
+          @if (generating) { <span class="spinner-border spinner-border-sm me-1"></span> }
+          Generate Package
+        </button>
+      </div>
+    </div>
+  </div></div>
+
+  <!-- Search by period panel -->
+  <div class="card mb-4"><div class="card-body">
+    <h6 class="fw-bold mb-3">Search by Period</h6>
+    <div class="row g-3 align-items-end">
+      <div class="col-md-3">
+        <label class="form-label">Search Start</label>
+        <input type="datetime-local" class="form-control" [(ngModel)]="search.start" />
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Search End</label>
+        <input type="datetime-local" class="form-control" [(ngModel)]="search.end" />
+      </div>
+      <div class="col-md-3 d-flex gap-2">
+        <button class="btn btn-outline-primary" (click)="searchByPeriod()" [disabled]="searching">
+          @if (searching) { <span class="spinner-border spinner-border-sm me-1"></span> }
+          Search
+        </button>
+        @if (searchResults !== null) {
+          <button class="btn btn-outline-secondary" (click)="clearSearch()">Clear</button>
+        }
+      </div>
+    </div>
+    @if (searchResults !== null) {
+      <div class="mt-2 text-muted small">
+        Showing {{ searchResults.length }} result(s) for the selected period.
+      </div>
+    }
+  </div></div>
+
+  <!-- Contents / checksum preview panel -->
+  @if (selectedPackage) {
+    <div class="card mb-4 border-info"><div class="card-body">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h6 class="fw-bold mb-0">Package #{{ selectedPackage.packageId }} — Contents</h6>
+        <button class="btn btn-sm btn-outline-secondary" (click)="closePreview()">Close</button>
+      </div>
+      <pre class="small bg-light p-2 rounded" style="max-height:300px;overflow:auto">{{ selectedPackage.contentsJSON }}</pre>
+    </div></div>
+  }
+
+  <!-- Packages table -->
+  <div class="card"><div class="card-body p-0">
+    @if (loading) { <div class="text-center p-4"><span class="spinner-border text-primary"></span></div> }
+    @else {
+      <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Period Start</th>
+            <th>Period End</th>
+            <th>Generated At</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (pkg of displayPackages; track pkg.packageId) {
+            <tr>
+              <td class="text-muted small">#{{ pkg.packageId }}</td>
+              <td class="text-muted small">{{ pkg.periodStart | date:'dd MMM yyyy, HH:mm' }}</td>
+              <td class="text-muted small">{{ pkg.periodEnd   | date:'dd MMM yyyy, HH:mm' }}</td>
+              <td class="text-muted small">{{ pkg.generatedAt | date:'dd MMM yyyy, HH:mm' }}</td>
+              <td>
+                <div class="d-flex gap-1">
+                  <button class="btn btn-sm btn-outline-info" (click)="preview(pkg)">View</button>
+                  @if (pkg.packageId) {
+                    <button class="btn btn-sm btn-outline-primary" (click)="download(pkg)">Download</button>
+                  }
+                  <button class="btn btn-sm btn-outline-danger" (click)="delete(pkg.packageId!)">Delete</button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+      </div>
+      @if (displayPackages.length === 0) {
+        <div class="empty-state">
+          <p>{{ searchResults !== null ? 'No packages found for the selected period.' : 'No audit packages generated yet.' }}</p>
+        </div>
+      }
+    }
+  </div></div>
+</div>

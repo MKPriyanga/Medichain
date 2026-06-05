@@ -1,0 +1,110 @@
+<div>
+  <div class="page-header">
+    <h1 class="page-title">Deliveries</h1>
+    @if (role === 'WAREHOUSE') {
+      <button class="btn btn-primary btn-sm" (click)="showForm = !showForm; error = ''">
+        {{ showForm ? 'Cancel' : '+ Create Delivery' }}
+      </button>
+    }
+  </div>
+  @if (message) { <div class="alert alert-success py-2 small">{{ message }}</div> }
+  @if (error)   { <div class="alert alert-danger py-2 small">{{ error }}</div> }
+
+  @if (showForm && role === 'WAREHOUSE') {
+    <div class="card mb-4"><div class="card-body">
+      <h6 class="fw-bold mb-3">Create Delivery for Approved Request</h6>
+      <p class="text-muted small mb-3">
+        Selecting a request and warehouse will <strong>dispatch inventory</strong> from that
+        warehouse automatically when you create the delivery.
+      </p>
+      <form (ngSubmit)="create()">
+        <div class="row g-3">
+          <div class="col-md-4">
+            <label class="form-label">Approved Request <span class="text-danger">*</span></label>
+            <select class="form-select" [(ngModel)]="form.requestId" name="requestId" required>
+              <option [value]="0" disabled>Select request</option>
+              @for (r of requests; track r.requestId) {
+                <option [value]="r.requestId">
+                  #{{ r.requestId }} — {{ r.department?.name || 'Dept '+r.departmentId }} (Qty: {{ r.quantity }})
+                </option>
+              }
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Dispatching Warehouse <span class="text-danger">*</span></label>
+            <select class="form-select" [(ngModel)]="form.warehouseId" name="warehouseId" required>
+              <option [value]="0" disabled>Select warehouse</option>
+              @for (w of warehouses; track w.warehouseId) {
+                <option [value]="w.warehouseId">{{ w.name }}</option>
+              }
+            </select>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">Quantity to Deliver <span class="text-danger">*</span></label>
+            <input type="number" class="form-control" [(ngModel)]="form.quantity"
+                   name="quantity" min="1" required />
+          </div>
+          <div class="col-md-3 d-flex align-items-end">
+            <button type="submit" class="btn btn-success w-100" [disabled]="saving">
+              @if (saving) { <span class="spinner-border spinner-border-sm me-1"></span> }
+              Create Delivery
+            </button>
+          </div>
+        </div>
+      </form>
+    </div></div>
+  }
+
+  <div class="card"><div class="card-body p-0">
+    @if (loading) {
+      <div class="text-center p-4"><span class="spinner-border text-primary"></span></div>
+    } @else {
+      <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Request</th>
+            <th>Dispatched From</th>
+            <th>Delivered By</th>
+            <th>Quantity</th>
+            <th>Status</th>
+            <th>Date</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (d of deliveries; track d.deliveryId) {
+            <tr>
+              <td class="text-muted small">#{{ d.deliveryId }}</td>
+              <td>Request #{{ d.requestId }}</td>
+              <td class="text-muted small">
+                {{ d.warehouseId ? 'WH #' + d.warehouseId : '—' }}
+              </td>
+              <td class="text-muted small">{{ d.deliveredBy }}</td>
+              <td>{{ d.quantity }}</td>
+              <td>
+                <span class="status-badge" [ngClass]="'status-' + d.status">{{ d.status }}</span>
+              </td>
+              <td class="text-muted small">{{ d.deliveredAt | date:'dd MMM yyyy' }}</td>
+              <td>
+                @if (canClose(d)) {
+                  <button class="btn btn-sm btn-outline-success" (click)="close(d.deliveryId)">
+                    @if (role === 'DEPARTMENT_HEAD') { ✅ Confirm Receipt }
+                    @else { Close }
+                  </button>
+                } @else {
+                  <span class="text-muted small">—</span>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+      </div>
+      @if (deliveries.length === 0) {
+        <div class="empty-state"><p>No deliveries found.</p></div>
+      }
+    }
+  </div></div>
+</div>

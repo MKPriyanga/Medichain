@@ -1,0 +1,63 @@
+<div>
+  <div class="page-header">
+    <h1 class="page-title">KPI Dashboard</h1>
+    <button class="btn btn-outline-success btn-sm" (click)="sync()" [disabled]="syncing">
+      @if (syncing) { <span class="spinner-border spinner-border-sm me-1"></span> } Sync Live Data
+    </button>
+  </div>
+
+  @if (message) { <div class="alert alert-success py-2 small">{{ message }}</div> }
+  @if (error)   { <div class="alert alert-danger py-2 small">{{ error }}</div> }
+
+  <!-- Category filter tabs -->
+  <div class="mb-3 d-flex gap-2 flex-wrap">
+    @for (cat of categories; track cat) {
+      <button class="btn btn-sm"
+        [class.btn-primary]="selectedCategory === cat"
+        [class.btn-outline-secondary]="selectedCategory !== cat"
+        (click)="selectedCategory = cat; onCategoryChange()">
+        {{ cat === 'ALL' ? 'All Categories' : categoryLabel(cat) }}
+      </button>
+    }
+  </div>
+
+  @if (loading) { <div class="text-center p-4"><span class="spinner-border text-primary"></span></div> }
+  @else {
+    <div class="row g-3">
+      @for (kpi of kpis; track kpi.kpiID) {
+        <div class="col-md-4">
+          <div class="card kpi-card h-100">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-start mb-2">
+                <h6 class="fw-bold mb-0">{{ kpi.name }}</h6>
+                @if (kpi.category) {
+                  <span class="badge bg-light text-dark border">{{ categoryLabel(kpi.category) }}</span>
+                }
+              </div>
+              @if (kpi.definition) { <p class="text-muted small mb-3">{{ kpi.definition }}</p> }
+              <div class="d-flex align-items-baseline gap-2 mb-1">
+                <span class="current-value">{{ kpi.currentValue }}</span>
+                <span class="text-muted small">/ {{ kpi.target }}</span>
+              </div>
+              <div class="progress mb-2" style="height:6px">
+                <div class="progress-bar" role="progressbar"
+                  [style.width.%]="progressPct(kpi)"
+                  [style.background-color]="progressColor(progressPct(kpi))">
+                </div>
+              </div>
+              <div class="d-flex justify-content-between">
+                <small class="text-muted">{{ progressPct(kpi) }}% of target</small>
+                <small class="text-muted">{{ kpi.reportingPeriod }}</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+      @if (kpis.length === 0) {
+        <div class="col-12 empty-state">
+          <p>No KPIs found{{ selectedCategory !== 'ALL' ? ' for category ' + selectedCategory : '' }}. Click "Sync Live Data" to populate from live services.</p>
+        </div>
+      }
+    </div>
+  }
+</div>

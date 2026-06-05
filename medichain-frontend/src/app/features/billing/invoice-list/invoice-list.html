@@ -1,0 +1,81 @@
+<div>
+  <div class="page-header">
+    <h1 class="page-title">Invoices</h1>
+    <div class="d-flex gap-2">
+      <select class="form-select form-select-sm" [(ngModel)]="filterStatus" (ngModelChange)="applyFilter()">
+        <option value="">All</option><option value="UNPAID">UNPAID</option><option value="PAID">PAID</option>
+      </select>
+      <button class="btn btn-primary btn-sm" (click)="showForm = !showForm">{{ showForm ? 'Cancel' : '+ Create Invoice' }}</button>
+    </div>
+  </div>
+  @if (message) { <div class="alert alert-success py-2 small">{{ message }}</div> }
+  @if (error) { <div class="alert alert-danger py-2 small">{{ error }}</div> }
+
+  <!-- Summary -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-3">
+      <div class="card p-3" style="border-left:4px solid #dc3545">
+        <div class="text-muted small">Total Unpaid</div>
+        <div class="fw-bold fs-4 text-danger">₹{{ totalUnpaid() | number:'1.2-2' }}</div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card p-3" style="border-left:4px solid #198754">
+        <div class="text-muted small">Total Paid</div>
+        <div class="fw-bold fs-4 text-success">₹{{ totalPaid() | number:'1.2-2' }}</div>
+      </div>
+    </div>
+  </div>
+
+  @if (showForm) {
+    <div class="card mb-4"><div class="card-body">
+      <h6 class="fw-bold mb-3">Create Invoice</h6>
+      <form (ngSubmit)="create()">
+        <div class="row g-3">
+          <div class="col-md-2"><label class="form-label">Department ID</label>
+            <input type="number" class="form-control" [(ngModel)]="form.departmentId" name="departmentId" required /></div>
+          <div class="col-md-2"><label class="form-label">Request ID (opt.)</label>
+            <input type="number" class="form-control" [(ngModel)]="form.requestId" name="requestId" /></div>
+          <div class="col-md-3"><label class="form-label">Amount (₹)</label>
+            <input type="number" class="form-control" [(ngModel)]="form.amount" name="amount" min="1" required /></div>
+          <div class="col-md-3"><label class="form-label">File URI (opt.)</label>
+            <input type="text" class="form-control" [(ngModel)]="form.fileUri" name="fileUri" placeholder="/uploads/invoice.pdf" /></div>
+          <div class="col-md-2 d-flex align-items-end">
+            <button type="submit" class="btn btn-success w-100" [disabled]="saving">
+              @if (saving) { <span class="spinner-border spinner-border-sm"></span> } @else { Create }
+            </button>
+          </div>
+        </div>
+      </form>
+    </div></div>
+  }
+
+  <div class="card"><div class="card-body p-0">
+    @if (loading) { <div class="text-center p-4"><span class="spinner-border text-primary"></span></div> }
+    @else {
+      <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead><tr><th>ID</th><th>Dept ID</th><th>Request</th><th>Amount</th><th>Status</th><th>Issued</th><th>File</th></tr></thead>
+        <tbody>
+          @for (inv of filtered; track inv.invoiceId) {
+            <tr>
+              <td class="text-muted small">#{{ inv.invoiceId }}</td>
+              <td>{{ inv.departmentId }}</td>
+              <td class="text-muted small">{{ inv.requestId ? '#'+inv.requestId : '—' }}</td>
+              <td class="fw-semibold">₹{{ inv.amount | number:'1.2-2' }}</td>
+              <td><span class="status-badge" [ngClass]="'status-' + inv.status">{{ inv.status }}</span></td>
+              <td class="text-muted small">{{ inv.issuedAt | date:'dd MMM yyyy' }}</td>
+              <td>
+                @if (inv.fileUri) {
+                  <a [href]="inv.fileUri" target="_blank" class="btn btn-sm btn-outline-secondary">Download</a>
+                } @else { <span class="text-muted small">—</span> }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+      </div>
+      @if (filtered.length === 0) { <div class="empty-state"><p>No invoices found.</p></div> }
+    }
+  </div></div>
+</div>

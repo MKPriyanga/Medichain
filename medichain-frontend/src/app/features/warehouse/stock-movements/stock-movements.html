@@ -1,0 +1,75 @@
+<div>
+  <div class="page-header">
+    <h1 class="page-title">Stock Movements</h1>
+    <button class="btn btn-primary btn-sm" (click)="showForm = !showForm">{{ showForm ? 'Cancel' : '+ New Movement' }}</button>
+  </div>
+  @if (message) { <div class="alert alert-success py-2 small">{{ message }}</div> }
+  @if (error) { <div class="alert alert-danger py-2 small">{{ error }}</div> }
+
+  @if (showForm) {
+    <div class="card mb-4"><div class="card-body">
+      <h6 class="fw-bold mb-3">Transfer Stock Between Warehouses</h6>
+      <form (ngSubmit)="create()">
+        <div class="row g-3">
+          <div class="col-md-3">
+            <label class="form-label">Inventory Item</label>
+            <select class="form-select" [(ngModel)]="form.itemId" name="itemId" required>
+              <option [value]="0" disabled>Select item</option>
+              @for (i of items; track i.itemId) {
+                <option [value]="i.itemId">Item #{{ i.itemId }} (Qty: {{ i.quantity }})</option>
+              }
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">From Warehouse</label>
+            <select class="form-select" [(ngModel)]="form.fromWarehouseId" name="fromWarehouseId" required>
+              <option [value]="0" disabled>Select source</option>
+              @for (w of warehouses; track w.warehouseId) { <option [value]="w.warehouseId">{{ w.name }}</option> }
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">To Warehouse</label>
+            <select class="form-select" [(ngModel)]="form.toWarehouseId" name="toWarehouseId" required>
+              <option [value]="0" disabled>Select destination</option>
+              @for (w of warehouses; track w.warehouseId) { <option [value]="w.warehouseId">{{ w.name }}</option> }
+            </select>
+          </div>
+          <div class="col-md-1">
+            <label class="form-label">Qty</label>
+            <input type="number" class="form-control" [(ngModel)]="form.quantity" name="quantity" min="1" required />
+          </div>
+          <div class="col-md-2 d-flex align-items-end">
+            <button type="submit" class="btn btn-success w-100" [disabled]="saving">
+              @if (saving) { <span class="spinner-border spinner-border-sm"></span> } @else { Transfer }
+            </button>
+          </div>
+        </div>
+      </form>
+    </div></div>
+  }
+
+  <div class="card"><div class="card-body p-0">
+    @if (loading) { <div class="text-center p-4"><span class="spinner-border text-primary"></span></div> }
+    @else {
+      <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead><tr><th>ID</th><th>Item</th><th>From</th><th>To</th><th>Qty</th><th>Status</th><th>Date</th></tr></thead>
+        <tbody>
+          @for (m of movements; track m.movementId) {
+            <tr>
+              <td class="text-muted small">{{ m.movementId }}</td>
+              <td>Item #{{ m.itemId }}</td>
+              <td class="text-muted small">{{ warehouseName(m.fromWarehouseId) }}</td>
+              <td class="text-muted small">{{ warehouseName(m.toWarehouseId) }}</td>
+              <td>{{ m.quantity }}</td>
+              <td><span class="status-badge" [ngClass]="'status-' + (m.status || 'ACTIVE')">{{ m.status || 'COMPLETED' }}</span></td>
+              <td class="text-muted small">{{ m.performedAt | date:'dd MMM yyyy' }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+      </div>
+      @if (movements.length === 0) { <div class="empty-state"><p>No stock movements recorded yet.</p></div> }
+    }
+  </div></div>
+</div>

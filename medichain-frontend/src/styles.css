@@ -1,0 +1,225 @@
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #f8f9fa;
+}
+
+.sidebar {
+  width: 250px;
+  height: 100vh;
+  background: linear-gradient(180deg, #0d6efd 0%, #084298 100%);
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 100;
+  padding-top: 60px;
+  padding-bottom: 20px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.sidebar .nav-link {
+  color: rgba(255,255,255,0.8);
+  padding: 10px 20px;
+  border-radius: 6px;
+  margin: 2px 8px;
+  transition: all 0.2s;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sidebar .nav-link:hover, .sidebar .nav-link.active {
+  background: rgba(255,255,255,0.2);
+  color: #fff;
+}
+
+.sidebar .nav-section {
+  color: rgba(255,255,255,0.5);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding: 12px 20px 4px;
+  font-weight: 600;
+}
+
+.main-content {
+  margin-left: 250px;
+  padding: 80px 24px 24px;
+  min-height: 100vh;
+}
+
+.topbar {
+  position: fixed;
+  top: 0;
+  left: 250px;
+  right: 0;
+  height: 60px;
+  background: #fff;
+  border-bottom: 1px solid #dee2e6;
+  z-index: 99;
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  justify-content: space-between;
+}
+
+.role-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.badge-ADMIN       { background: #6f42c1; color: #fff; }
+.badge-DOCTOR      { background: #198754; color: #fff; }
+.badge-NURSE       { background: #20c997; color: #fff; }
+.badge-WAREHOUSE   { background: #fd7e14; color: #fff; }
+.badge-PROCUREMENT { background: #0dcaf0; color: #000; }
+.badge-AUDITOR     { background: #6c757d; color: #fff; }
+.badge-DEPARTMENT_HEAD { background: #dc3545; color: #fff; }
+.badge-UNASSIGNED  { background: #adb5bd; color: #000; }
+
+.status-badge {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+.status-ACTIVE, .status-PAID, .status-APPROVED, .status-DELIVERED,
+.status-CLOSED, .status-SUCCESS, .status-PLACED, .status-RECEIVED {
+  background: #d1e7dd; color: #0a3622;
+}
+.status-PENDING, .status-UNPAID, .status-IN_DELIVERY {
+  background: #fff3cd; color: #664d03;
+}
+.status-INACTIVE, .status-REJECTED, .status-FAILED, .status-CANCELLED {
+  background: #f8d7da; color: #58151c;
+}
+
+.auth-wrapper {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #0d6efd 0%, #084298 100%);
+}
+
+.auth-card {
+  width: 420px;
+  border-radius: 12px;
+  border: none;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.page-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #212529;
+  margin: 0;
+}
+
+.table thead th {
+  background: #f8f9fa;
+  font-size: 13px;
+  font-weight: 600;
+  color: #6c757d;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid #dee2e6;
+}
+
+.table tbody td {
+  font-size: 14px;
+  vertical-align: middle;
+}
+
+.card {
+  border: none;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.kpi-card { border-left: 4px solid #0d6efd; }
+.kpi-card .current-value { font-size: 28px; font-weight: 700; color: #0d6efd; }
+
+.notification-item {
+  border-left: 3px solid #dee2e6;
+  background: #f8f9fa;
+  padding: 12px 16px;
+  border-radius: 0 8px 8px 0;
+  margin-bottom: 8px;
+}
+
+.notification-item.unread {
+  background: #e7f0ff;
+  border-left-color: #0d6efd;
+}
+
+.sidebar-brand {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 250px;
+  height: 60px;
+  background: rgba(0,0,0,0.2);
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  z-index: 101;
+}
+
+.sidebar-brand span { color: #fff; font-size: 20px; font-weight: 700; letter-spacing: 1px; }
+
+/* Hide scrollbar track on sidebar but keep it scrollable */
+.sidebar::-webkit-scrollbar { width: 4px; }
+.sidebar::-webkit-scrollbar-track { background: transparent; }
+.sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
+.sidebar::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.4); }
+
+.stat-card { border-radius: 10px; padding: 20px; color: #fff; }
+
+.empty-state { text-align: center; padding: 60px 20px; color: #adb5bd; }
+
+/* ── Sidebar overlay (mobile only) ─────────────────────────────────────── */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 98;
+}
+.sidebar-overlay.show { display: block; }
+
+
+@media (max-width: 767.98px) {
+  .sidebar,
+  .sidebar-brand {
+    transform: translateX(-260px);
+    transition: transform 0.25s ease;
+  }
+  .sidebar.sidebar-mobile-open,
+  .sidebar-brand.sidebar-mobile-open {
+    transform: translateX(0);
+  }
+  .topbar { left: 0 !important; }
+  .main-content { margin-left: 0 !important; padding: 72px 12px 16px; }
+  .auth-card { width: 100% !important; max-width: 420px; margin: 16px; }
+  .page-header { flex-wrap: wrap; gap: 8px; }
+  .sidebar-toggle-btn { display: inline-flex !important; }
+}
+
+@media (min-width: 768px) {
+  .sidebar-toggle-btn { display: none !important; }
+}

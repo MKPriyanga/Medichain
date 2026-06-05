@@ -1,0 +1,160 @@
+<div>
+  <div class="page-header">
+    <h1 class="page-title">Purchase Requests</h1>
+    @if (isWarehouse()) {
+      <button class="btn btn-primary btn-sm" (click)="showCreateForm = !showCreateForm; error = ''">
+        {{ showCreateForm ? 'Cancel' : '+ New Purchase Request' }}
+      </button>
+    }
+  </div>
+
+  @if (message) { <div class="alert alert-success py-2 small">{{ message }}</div> }
+  @if (error)   { <div class="alert alert-danger py-2 small">{{ error }}</div> }
+
+  <!-- ── Create Form (Warehouse) ──────────────────────────────────────────── -->
+  @if (showCreateForm && isWarehouse()) {
+    <div class="card mb-4">
+      <div class="card-body">
+        <h6 class="fw-bold mb-3">Raise a Purchase Request</h6>
+        <form (ngSubmit)="submitCreate()">
+          <div class="row g-3">
+            <div class="col-md-3">
+              <label class="form-label">Product <span class="text-danger">*</span></label>
+              <select class="form-select" [(ngModel)]="createForm.productId" name="productId" required>
+                <option [value]="0" disabled>Select a product</option>
+                @for (p of products; track p.productId) {
+                  <option [value]="p.productId">{{ p.name }} ({{ p.category }})</option>
+                }
+              </select>
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">Quantity <span class="text-danger">*</span></label>
+              <input type="number" class="form-control" [(ngModel)]="createForm.quantity"
+                     name="quantity" min="1" required />
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Dept. Request ID <span class="text-muted">(optional)</span></label>
+              <input type="number" class="form-control" [(ngModel)]="createForm.departmentRequestId"
+                     name="departmentRequestId" min="1" placeholder="e.g. 23" />
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Warehouse ID <span class="text-muted">(optional)</span></label>
+              <input type="number" class="form-control" [(ngModel)]="createForm.warehouseId"
+                     name="warehouseId" min="1" />
+            </div>
+            <div class="col-md-12">
+              <label class="form-label">Notes <span class="text-muted">(optional)</span></label>
+              <textarea class="form-control" rows="2" [(ngModel)]="createForm.notes"
+                        name="notes" placeholder="e.g. Needed for Department Request #23 — running low on stock."></textarea>
+            </div>
+            <div class="col-md-3">
+              <button type="submit" class="btn btn-success w-100" [disabled]="saving">
+                @if (saving) { <span class="spinner-border spinner-border-sm"></span> }
+                @else { Submit Request }
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- ── Approve Panel (Procurement) ──────────────────────────────────────── -->
+  @if (approvingId !== null && isProcurement()) {
+    <div class="card mb-4 border-success">
+      <div class="card-body">
+        <h6 class="fw-bold mb-3 text-success">Approve Purchase Request #{{ approvingId }}</h6>
+        <p class="text-muted small mb-3">
+          Select a supplier. A Supplier Order will be automatically created for the requested product and quantity.
+        </p>
+        <div class="row g-3 align-items-end">
+          <div class="col-md-4">
+            <label class="form-label">Supplier <span class="text-danger">*</span></label>
+            <select class="form-select" [(ngModel)]="selectedSupplierId" name="supplierId">
+              <option [value]="0" disabled>Select supplier</option>
+              @for (s of suppliers; track s.supplierId) {
+                <option [value]="s.supplierId">{{ s.name }}</option>
+              }
+            </select>
+          </div>
+          <div class="col-md-auto">
+            <button class="btn btn-success" (click)="confirmApprove()" [disabled]="approving">
+              @if (approving) { <span class="spinner-border spinner-border-sm"></span> }
+              @else { Confirm & Place Order }
+            </button>
+          </div>
+          <div class="col-md-auto">
+            <button class="btn btn-outline-secondary" (click)="cancelApprove()">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ── Table ──────────────────────────────────────────────────────────────── -->
+  <div class="card">
+    <div class="card-body p-0">
+      @if (loading) {
+        <div class="text-center p-4"><span class="spinner-border text-primary"></span></div>
+      } @else {
+        <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Product</th>
+              <th>Qty</th>
+              <th>Dept. Request</th>
+              <th>Notes</th>
+              <th>Status</th>
+              <th>Created At</th>
+              <th>Order ID</th>
+              @if (isProcurement()) { <th>Actions</th> }
+            </tr>
+          </thead>
+          <tbody>
+            @for (r of requests; track r.purchaseRequestId) {
+              <tr>
+                <td class="text-muted small">{{ r.purchaseRequestId }}</td>
+                <td>
+                  <span class="fw-semibold">{{ productName(r.productId) }}</span>
+                  <span class="text-muted small d-block">#{{ r.productId }}</span>
+                </td>
+                <td>{{ r.quantity }}</td>
+                <td class="text-muted small">{{ r.departmentRequestId ?? '—' }}</td>
+                <td class="text-muted small"
+                    style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"
+                    [title]="r.notes ?? ''">{{ r.notes || '—' }}</td>
+                <td>
+                  <span class="status-badge" [ngClass]="statusClass(r.status)">{{ r.status }}</span>
+                </td>
+                <td class="text-muted small">{{ r.createdAt | date:'dd MMM yyyy' }}</td>
+                <td class="text-muted small">{{ r.orderId ?? '—' }}</td>
+                @if (isProcurement()) {
+                  <td>
+                    @if (r.status === 'PENDING') {
+                      <button class="btn btn-success btn-sm me-1"
+                              (click)="openApprove(r.purchaseRequestId!)">
+                        Approve
+                      </button>
+                      <button class="btn btn-outline-danger btn-sm"
+                              (click)="reject(r.purchaseRequestId!)">
+                        Reject
+                      </button>
+                    } @else {
+                      <span class="text-muted small">—</span>
+                    }
+                  </td>
+                }
+              </tr>
+            }
+          </tbody>
+        </table>
+        </div>
+        @if (requests.length === 0) {
+          <div class="empty-state"><p>No purchase requests found.</p></div>
+        }
+      }
+    </div>
+  </div>
+</div>

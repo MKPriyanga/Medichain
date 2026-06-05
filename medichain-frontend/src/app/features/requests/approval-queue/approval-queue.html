@@ -1,0 +1,53 @@
+<div>
+  <div class="page-header">
+    <h1 class="page-title">Approval Queue</h1>
+    <span class="badge bg-warning text-dark">{{ requests.length }} Pending</span>
+  </div>
+  @if (message) { <div class="alert alert-success py-2 small">{{ message }}</div> }
+  @if (error) { <div class="alert alert-danger py-2 small">{{ error }}</div> }
+
+  <div class="card"><div class="card-body p-0">
+    @if (loading) { <div class="text-center p-4"><span class="spinner-border text-primary"></span></div> }
+    @else if (requests.length === 0) {
+      <div class="empty-state">
+        <p class="fw-semibold">No pending requests</p>
+        <p class="small">All requests have been reviewed.</p>
+      </div>
+    } @else {
+      <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead>
+          <tr><th>ID</th><th>Department</th><th>Requested By</th><th>Products</th><th>Qty</th><th>Date</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+          @for (r of requests; track r.requestId) {
+            <tr>
+              <td class="text-muted small">#{{ r.requestId }}</td>
+              <td>
+                <span class="fw-semibold">{{ deptName(r.departmentId) }}</span>
+                <span class="text-muted small d-block">#{{ r.departmentId }}</span>
+              </td>
+              <td class="text-muted small">{{ r.createdBy || '—' }}</td>
+              <td>
+                @for (name of productNames(r.productIdsJson); track name) {
+                  <span class="badge bg-light text-dark border me-1 mb-1">{{ name }}</span>
+                }
+              </td>
+              <td>{{ r.quantity }}</td>
+              <td class="text-muted small">{{ r.requestedAt | date:'dd MMM yyyy, HH:mm' }}</td>
+              <td>
+                <div class="d-flex gap-2">
+                  <button class="btn btn-sm btn-success" (click)="approve(r.requestId)" [disabled]="acting === r.requestId">
+                    @if (acting === r.requestId) { <span class="spinner-border spinner-border-sm"></span> } @else { Approve }
+                  </button>
+                  <button class="btn btn-sm btn-outline-danger" (click)="reject(r.requestId)" [disabled]="acting === r.requestId">Reject</button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+      </div>
+    }
+  </div></div>
+</div>

@@ -1,0 +1,87 @@
+<div class="container">
+  <h2>Audit Logs</h2>
+ 
+  <!-- Access denied -->
+  <div *ngIf="!canAccess" class="access-denied">
+    Access denied. Only ADMIN or AUDITOR can view audit logs.
+  </div>
+ 
+  <div *ngIf="canAccess">
+ 
+    <!-- Filters -->
+    <div class="filter-bar">
+      <input
+        type="text"
+        [(ngModel)]="filterUserId"
+        (ngModelChange)="applyFilter()"
+        placeholder="Filter by User ID" />
+ 
+      <input
+        type="text"
+        [(ngModel)]="filterAction"
+        (ngModelChange)="applyFilter()"
+        placeholder="Filter by Action" />
+ 
+      <button class="btn-clear" (click)="clearFilter()">Clear</button>
+      <button class="btn-refresh" (click)="load()">Refresh</button>
+    </div>
+ 
+    <!-- Loading -->
+    <div *ngIf="loading" class="loading">Loading audit logs...</div>
+ 
+    <!-- Error -->
+    <div *ngIf="error" class="error">{{ error }}</div>
+ 
+    <!-- Table -->
+    <div *ngIf="!loading && filteredLogs.length > 0" class="table-wrapper">
+      <div class="table-responsive">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>User ID</th>
+            <th>Action</th>
+            <th>Resource Type</th>
+            <th>Resource ID</th>
+            <th>Details</th>
+            <th>Timestamp</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let log of filteredLogs">
+            <td>{{ log.id }}</td>
+            <td>{{ log.userId }}</td>
+            <td>
+              <span class="badge"
+                [ngClass]="{
+                  'badge-success': log.action === 'LOGIN_SUCCESS',
+                  'badge-danger':  log.action === 'LOGIN_FAILED',
+                  'badge-info':    log.action === 'ROLE_ASSIGNED',
+                  'badge-warning': log.action === 'USER_ACTIVATED' || log.action === 'USER_DEACTIVATED',
+                  'badge-default': log.action === 'USER_REGISTERED' || log.action === 'USER_CREATED_BY_ADMIN'
+                }">
+                {{ log.action }}
+              </span>
+            </td>
+            <td>{{ log.resourceType }}</td>
+            <td>{{ log.resourceId }}</td>
+            <td>{{ log.details }}</td>
+            <td>{{ log.timestamp | date:'dd MMM yyyy, hh:mm a' }}</td>
+          </tr>
+        </tbody>
+      </table>
+      </div>
+
+      <p class="record-count">
+        Showing {{ filteredLogs.length }} of {{ logs.length }} records
+      </p>
+    </div>
+ 
+    <!-- Empty -->
+    <div *ngIf="!loading && filteredLogs.length === 0 && !error" class="empty">
+      No audit logs found.
+    </div>
+ 
+  </div>
+</div>
+ 

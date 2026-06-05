@@ -1,0 +1,149 @@
+<div>
+  <div class="page-header">
+    <h1 class="page-title">Inventory</h1>
+    <div class="d-flex gap-2">
+      <select class="form-select form-select-sm"
+              [(ngModel)]="filterWarehouse" (ngModelChange)="load()">
+        <option [value]="0">All Warehouses</option>
+        @for (w of warehouses; track w.warehouseId) {
+          <option [value]="w.warehouseId">{{ w.name }}</option>
+        }
+      </select>
+      <button class="btn btn-primary btn-sm"
+              (click)="showForm = !showForm; restockItem = null; error = ''">
+        {{ showForm ? 'Cancel' : '+ Record Receipt' }}
+      </button>
+    </div>
+  </div>
+
+  @if (message) { <div class="alert alert-success py-2 small">{{ message }}</div> }
+  @if (error)   { <div class="alert alert-danger py-2 small">{{ error }}</div> }
+
+  <!-- ── Record New Inventory Item ─────────────────────────────────────────── -->
+  @if (showForm) {
+    <div class="card mb-4"><div class="card-body">
+      <h6 class="fw-bold mb-3">Record New Inventory Receipt</h6>
+      <form (ngSubmit)="create()">
+        <div class="row g-3">
+          <div class="col-md-4">
+            <label class="form-label">Warehouse</label>
+            <select class="form-select" [(ngModel)]="form.warehouseId" name="warehouseId" required>
+              <option [value]="0" disabled>Select warehouse</option>
+              @for (w of warehouses; track w.warehouseId) {
+                <option [value]="w.warehouseId">{{ w.name }}</option>
+              }
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Product</label>
+            <select class="form-select" [(ngModel)]="form.productId" name="productId" required>
+              <option [value]="0" disabled>Select product</option>
+              @for (p of products; track p.productId) {
+                <option [value]="p.productId">{{ p.name }}</option>
+              }
+            </select>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">Quantity</label>
+            <input type="number" class="form-control" [(ngModel)]="form.quantity"
+                   name="quantity" min="1" required />
+          </div>
+          <div class="col-md-2 d-flex align-items-end">
+            <button type="submit" class="btn btn-success w-100" [disabled]="saving">
+              @if (saving) { <span class="spinner-border spinner-border-sm"></span> }
+              @else { Save }
+            </button>
+          </div>
+        </div>
+      </form>
+    </div></div>
+  }
+
+  <!-- ── Restock Panel (top-up existing item) ──────────────────────────────── -->
+  @if (restockItem !== null) {
+    <div class="card mb-4 border-success">
+      <div class="card-body">
+        <h6 class="fw-bold mb-2 text-success">Restock Inventory</h6>
+        <p class="text-muted small mb-3">
+          Adding stock to <strong>{{ productName(restockItem.productId) }}</strong>
+          in <strong>{{ restockItem.warehouse?.name || 'warehouse' }}</strong>
+          — current stock: <strong>{{ restockItem.quantity }}</strong> unit(s).
+        </p>
+        <div class="row g-3 align-items-end">
+          <div class="col-md-3">
+            <label class="form-label">Units to Add <span class="text-danger">*</span></label>
+            <input type="number" class="form-control" [(ngModel)]="restockQty"
+                   name="restockQty" min="1" placeholder="e.g. 50" />
+          </div>
+          <div class="col-md-auto">
+            <p class="text-muted small mb-1">New total after restock</p>
+            <p class="fw-bold fs-5 mb-0">{{ restockItem.quantity + (restockQty || 0) }} units</p>
+          </div>
+          <div class="col-md-auto d-flex gap-2 align-items-end">
+            <button class="btn btn-success" (click)="confirmRestock()" [disabled]="restocking">
+              @if (restocking) { <span class="spinner-border spinner-border-sm"></span> }
+              @else { Confirm Restock }
+            </button>
+            <button class="btn btn-outline-secondary" (click)="cancelRestock()">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ── Inventory Table ────────────────────────────────────────────────────── -->
+  <div class="card"><div class="card-body p-0">
+    @if (loading) {
+      <div class="text-center p-4"><span class="spinner-border text-primary"></span></div>
+    } @else {
+      <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Product</th>
+            <th>Warehouse</th>
+            <th>Quantity</th>
+            <th>Received</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of items; track item.itemId) {
+            <tr [class.table-danger]="isLowStock(item)">
+              <td class="text-muted small">{{ item.itemId }}</td>
+              <td class="fw-semibold">{{ productName(item.productId) }}</td>
+              <td>{{ item.warehouse?.name || 'N/A' }}</td>
+              <td>
+                <span [class.text-danger]="isLowStock(item)"
+                      [class.fw-bold]="isLowStock(item)">{{ item.quantity }}</span>
+                @if (isLowStock(item)) {
+                  <span class="badge bg-danger ms-1" style="font-size:10px">LOW</span>
+                }
+              </td>
+              <td class="text-muted small">{{ item.receivedAt | date:'dd MMM yyyy' }}</td>
+              <td>
+                <span class="status-badge"
+                      [ngClass]="'status-' + (item.status || 'ACTIVE')">
+                  {{ item.status || 'ACTIVE' }}
+                </span>
+              </td>
+              <td>
+                <button class="btn btn-outline-success btn-sm"
+                        (click)="openRestock(item)"
+                        [class.active]="restockItem?.itemId === item.itemId">
+                  ➕ Restock
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+      </div>
+      @if (items.length === 0) {
+        <div class="empty-state"><p>No inventory items found.</p></div>
+      }
+    }
+  </div></div>
+</div>

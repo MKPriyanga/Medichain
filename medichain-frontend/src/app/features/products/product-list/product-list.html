@@ -1,0 +1,71 @@
+<div>
+  <div class="page-header">
+    <h1 class="page-title">Products</h1>
+    <button class="btn btn-primary btn-sm" (click)="showForm = !showForm">{{ showForm ? 'Cancel' : '+ Add Product' }}</button>
+  </div>
+
+  @if (message) { <div class="alert alert-success py-2 small">{{ message }}</div> }
+  @if (error) { <div class="alert alert-danger py-2 small">{{ error }}</div> }
+
+  @if (showForm) {
+    <div class="card mb-4">
+      <div class="card-body">
+        <h6 class="fw-bold mb-3">Add New Product</h6>
+        <form (ngSubmit)="create()">
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label class="form-label">Product Name</label>
+              <input type="text" class="form-control" [(ngModel)]="form.name" name="name" required />
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Category</label>
+              <input type="text" class="form-control" [(ngModel)]="form.category" name="category" placeholder="e.g. Surgical" />
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">Unit</label>
+              <input type="text" class="form-control" [(ngModel)]="form.unit" name="unit" placeholder="e.g. Box" />
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">Price (₹)</label>
+              <input type="number" class="form-control" [(ngModel)]="form.price" name="price" min="0" />
+            </div>
+            <div class="col-md-1 d-flex align-items-end">
+              <button type="submit" class="btn btn-success w-100" [disabled]="saving">
+                @if (saving) { <span class="spinner-border spinner-border-sm"></span> } @else { Save }
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <div class="card">
+    <div class="card-body p-0">
+      @if (loading) {
+        <div class="text-center p-4"><span class="spinner-border text-primary"></span></div>
+      } @else {
+        <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead>
+            <tr><th>ID</th><th>Name</th><th>Category</th><th>Unit</th><th>Price</th><th>Status</th></tr>
+          </thead>
+          <tbody>
+            @for (p of products; track p.productId) {
+              <tr>
+                <td class="text-muted small">{{ p.productId }}</td>
+                <td class="fw-semibold">{{ p.name }}</td>
+                <td>{{ p.category }}</td>
+                <td>{{ p.unit }}</td>
+                <td>₹{{ p.price }}</td>
+                <td><span class="status-badge" [ngClass]="'status-' + p.status">{{ p.status }}</span></td>
+              </tr>
+            }
+          </tbody>
+        </table>
+        </div>
+        @if (products.length === 0) { <div class="empty-state"><p>No products found. Add your first product.</p></div> }
+      }
+    </div>
+  </div>
+</div>

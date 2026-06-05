@@ -1,0 +1,88 @@
+<div>
+  <div class="page-header">
+    <h1 class="page-title">My Requests</h1>
+    <button class="btn btn-primary btn-sm" (click)="showForm = !showForm; error = ''">{{ showForm ? 'Cancel' : '+ New Request' }}</button>
+  </div>
+  @if (message) { <div class="alert alert-success py-2 small">{{ message }}</div> }
+  @if (error) { <div class="alert alert-danger py-2 small">{{ error }}</div> }
+
+  @if (showForm) {
+    <div class="card mb-4"><div class="card-body">
+      <h6 class="fw-bold mb-3">Submit New Supply Request</h6>
+      <form (ngSubmit)="submit()">
+        <div class="row g-3">
+          <div class="col-md-4">
+            <label class="form-label">Department</label>
+            <select class="form-select" [(ngModel)]="form.departmentId" name="departmentId" required>
+              <option [value]="0" disabled>Select department</option>
+              @for (d of departments; track d.departmentId) {
+                <option [value]="d.departmentId">{{ d.name }}</option>
+              }
+            </select>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">Quantity</label>
+            <input type="number" class="form-control" [(ngModel)]="form.quantity" name="quantity" min="1" required />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Add Products</label>
+            <div class="input-group">
+              <select class="form-select" [(ngModel)]="selectedProductId" name="selectedProduct">
+                <option [value]="0">Select a product</option>
+                @for (p of products; track p.productId) {
+                  <option [value]="p.productId">{{ p.name }} ({{ p.category }})</option>
+                }
+              </select>
+              <button type="button" class="btn btn-outline-primary" (click)="addProduct()">Add</button>
+            </div>
+            @if (form.productIds.length > 0) {
+              <div class="mt-2 d-flex flex-wrap gap-1">
+                @for (id of form.productIds; track id) {
+                  <span class="badge bg-primary">
+                    {{ productName(id) }}
+                    <span style="cursor:pointer;margin-left:4px" (click)="removeProduct(id)">✕</span>
+                  </span>
+                }
+              </div>
+            }
+          </div>
+          <div class="col-12">
+            <button type="submit" class="btn btn-success" [disabled]="saving || form.productIds.length === 0 || form.departmentId === 0">
+              @if (saving) { <span class="spinner-border spinner-border-sm me-1"></span> }
+              Submit Request
+            </button>
+          </div>
+        </div>
+      </form>
+    </div></div>
+  }
+
+  <div class="card"><div class="card-body p-0">
+    @if (loading) { <div class="text-center p-4"><span class="spinner-border text-primary"></span></div> }
+    @else {
+      <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead><tr><th>ID</th><th>Department</th><th>Products</th><th>Qty</th><th>Status</th><th>Approved By</th><th>Date</th></tr></thead>
+        <tbody>
+          @for (r of requests; track r.requestId) {
+            <tr>
+              <td class="text-muted small">#{{ r.requestId }}</td>
+              <td class="fw-semibold">{{ deptName(r.departmentId) }}</td>
+              <td class="text-muted small">
+                @for (name of productNames(r.productIdsJson); track name) {
+                  <span class="badge bg-secondary me-1">{{ name }}</span>
+                }
+              </td>
+              <td>{{ r.quantity }}</td>
+              <td><span class="status-badge" [ngClass]="'status-' + r.status">{{ r.status }}</span></td>
+              <td class="text-muted small">{{ r.approvedBy || '—' }}</td>
+              <td class="text-muted small">{{ r.requestedAt | date:'dd MMM yyyy' }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+      </div>
+      @if (requests.length === 0) { <div class="empty-state"><p>You have no requests yet. Submit your first request.</p></div> }
+    }
+  </div></div>
+</div>
