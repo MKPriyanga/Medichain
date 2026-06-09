@@ -13,12 +13,6 @@ public class ProductClientFallback implements ProductClient {
     private static final Logger log = 
         LoggerFactory.getLogger(ProductClientFallback.class);
 
-//    @Override
-//    public List<ProductDto> getAllProducts() {
-//        log.warn("Product service unavailable — " +
-//                 "returning empty list, product validation skipped");
-//        return Collections.emptyList();
-//    }
     @Override
     public List<ProductDto> getAllProducts() {
         log.warn("Product service unavailable — returning null");

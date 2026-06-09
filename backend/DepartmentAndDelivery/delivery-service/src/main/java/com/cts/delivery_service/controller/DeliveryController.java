@@ -22,7 +22,7 @@ public class DeliveryController {
         this.service = service;
     }
 
-    // CREATE DELIVERY — WAREHOUSE only
+
     @PostMapping
     public ResponseEntity<?> createDelivery(
             @RequestBody DeliveryCreateDto dto,
@@ -42,7 +42,6 @@ public class DeliveryController {
         }
     }
 
-    // LIST DELIVERIES — ADMIN, WAREHOUSE, AUDITOR, DEPARTMENT_HEAD
     @GetMapping
     public ResponseEntity<?> listDeliveries(
             @RequestParam(required = false) Integer requestId,
@@ -57,7 +56,6 @@ public class DeliveryController {
         return ResponseEntity.ok(service.listDeliveries(requestId));
     }
 
-    // CLOSE DELIVERY — WAREHOUSE or DEPARTMENT_HEAD (confirm receipt)
     @PutMapping("/{deliveryId}/close")
     public ResponseEntity<?> closeRequest(
             @PathVariable Integer deliveryId,
@@ -76,7 +74,6 @@ public class DeliveryController {
         }
     }
 
-    // GET BY ID — ADMIN, WAREHOUSE, AUDITOR, DEPARTMENT_HEAD
     @GetMapping("/{deliveryId}")
     public ResponseEntity<?> getDeliveryById(
             @PathVariable Integer deliveryId,

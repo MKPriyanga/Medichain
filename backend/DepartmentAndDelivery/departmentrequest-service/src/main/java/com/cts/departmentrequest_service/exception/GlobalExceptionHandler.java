@@ -18,12 +18,4 @@ public class GlobalExceptionHandler {
         );
     }
 
-//    @ExceptionHandler(Exception.class)
-//    public ResponseEntity<String> handleGeneric(Exception ex) {
-//    	ex.printStackTrace();
-//        return new ResponseEntity<>(
-//                "Internal Server Error",
-//                HttpStatus.INTERNAL_SERVER_ERROR
-//        );
-//    }
 }

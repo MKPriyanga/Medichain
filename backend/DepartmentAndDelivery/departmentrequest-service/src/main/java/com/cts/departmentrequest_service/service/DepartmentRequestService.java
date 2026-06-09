@@ -32,7 +32,6 @@ public class DepartmentRequestService {
         this.notificationClient = notificationClient;
     }
 
-    // CREATE REQUEST
     public DepartmentRequestResponseDto createRequest(DepartmentRequestCreateDto dto,
                                                        String createdBy,
                                                        Long createdByUserId) {
@@ -45,13 +44,11 @@ public class DepartmentRequestService {
             throw new InvalidRequestException("Product list cannot be empty");
         }
 
-        // VALIDATE department exists and is ACTIVE
         DepartmentDto department = departmentClient.getDepartment(dto.getDepartmentId());
         if (department == null || "INACTIVE".equals(department.getStatus())) {
             throw new InvalidRequestException("Department not found or inactive");
         }
 
-        // VALIDATE each productId exists and is ACTIVE
         List<ProductDto> allProducts = productClient.getAllProducts();
         if (allProducts==null || allProducts.isEmpty()) {
             throw new InvalidRequestException(
@@ -70,7 +67,6 @@ public class DepartmentRequestService {
             }
         }
 
-        // CHECK no pending request exists for this department
         boolean exists = repository.existsByDepartmentIdAndStatus(
                 dto.getDepartmentId(), "PENDING");
         if (exists) {
@@ -91,7 +87,7 @@ public class DepartmentRequestService {
 
         DepartmentRequest saved = repository.save(request);
 
-        // NOTIFY — alert department HEAD using headId
+
         if (department.getHeadId() != null) {
             notificationClient.sendNotification(new NotificationRequestDto(
                     department.getHeadId().longValue(),
@@ -106,7 +102,7 @@ public class DepartmentRequestService {
         return mapToResponse(saved);
     }
 
-    // APPROVE REQUEST
+
     public DepartmentRequestResponseDto approve(Integer requestId, String username) {
 
         DepartmentRequest request = repository.findById(requestId)
@@ -121,7 +117,7 @@ public class DepartmentRequestService {
         request.setApprovedBy(username);
         DepartmentRequest saved = repository.save(request);
 
-        // NOTIFY — alert the CREATOR (doctor/nurse) that request was approved
+
         if (request.getCreatedByUserId() != null) {
             notificationClient.sendNotification(new NotificationRequestDto(
                     request.getCreatedByUserId(),
@@ -135,7 +131,7 @@ public class DepartmentRequestService {
         return mapToResponse(saved);
     }
 
-    // REJECT REQUEST
+
     public DepartmentRequestResponseDto reject(Integer requestId, String username) {
 
         DepartmentRequest request = repository.findById(requestId)
@@ -150,7 +146,7 @@ public class DepartmentRequestService {
         request.setApprovedBy(username);
         DepartmentRequest saved = repository.save(request);
 
-        // NOTIFY — alert the CREATOR (doctor/nurse) that request was rejected
+
         if (request.getCreatedByUserId() != null) {
             notificationClient.sendNotification(new NotificationRequestDto(
                     request.getCreatedByUserId(),
@@ -164,7 +160,7 @@ public class DepartmentRequestService {
         return mapToResponse(saved);
     }
 
-    // MARK PROCESSING — WAREHOUSE starts working on the request
+
     public DepartmentRequestResponseDto markProcessing(Integer requestId, String username) {
 
         DepartmentRequest request = repository.findById(requestId)
@@ -178,7 +174,7 @@ public class DepartmentRequestService {
         request.setStatus("PROCESSING");
         DepartmentRequest saved = repository.save(request);
 
-        // NOTIFY the creator that warehouse is processing their request
+
         if (request.getCreatedByUserId() != null) {
             notificationClient.sendNotification(new NotificationRequestDto(
                     request.getCreatedByUserId(),
@@ -192,7 +188,7 @@ public class DepartmentRequestService {
         return mapToResponse(saved);
     }
 
-    // MARK COMPLETED — WAREHOUSE finishes the request
+
     public DepartmentRequestResponseDto markCompleted(Integer requestId, String username) {
 
         DepartmentRequest request = repository.findById(requestId)
@@ -206,7 +202,7 @@ public class DepartmentRequestService {
         request.setStatus("COMPLETED");
         DepartmentRequest saved = repository.save(request);
 
-        // NOTIFY the creator that their request is completed
+
         if (request.getCreatedByUserId() != null) {
             notificationClient.sendNotification(new NotificationRequestDto(
                     request.getCreatedByUserId(),
@@ -220,7 +216,7 @@ public class DepartmentRequestService {
         return mapToResponse(saved);
     }
 
-    // VIEW REQUEST
+
     public DepartmentRequestResponseDto view(Integer requestId) {
 
         DepartmentRequest request = repository.findById(requestId)
@@ -244,7 +240,7 @@ public class DepartmentRequestService {
         );
     }
 
-    // GET ALL
+
     public List<DepartmentRequestResponseDto> getAllRequests() {
         return repository.findAll()
                 .stream()
@@ -252,7 +248,6 @@ public class DepartmentRequestService {
                 .collect(Collectors.toList());
     }
 
-    // MAPPER
     private DepartmentRequestResponseDto mapToResponse(DepartmentRequest req) {
         return new DepartmentRequestResponseDto(
                 null,

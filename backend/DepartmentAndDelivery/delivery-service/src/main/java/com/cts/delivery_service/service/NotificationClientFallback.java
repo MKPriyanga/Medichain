@@ -8,7 +8,5 @@ public class NotificationClientFallback implements NotificationClient {
 
     @Override
     public void sendNotification(NotificationRequestDto dto) {
-        // Notification service unavailable — silently ignore
-        // Do not fail the main operation
     }
 }

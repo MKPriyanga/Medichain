@@ -22,7 +22,6 @@ public class DepartmenRequestController {
         this.service = service;
     }
 
-    // CREATE REQUEST — DOCTOR, NURSE only
     @PostMapping
     public ResponseEntity<?> createRequest(
             @RequestBody DepartmentRequestCreateDto dto,
@@ -39,8 +38,6 @@ public class DepartmenRequestController {
                 dto, createdBy, Long.parseLong(createdByUserId));
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
-
-    // APPROVE REQUEST — ADMIN, DEPARTMENT_HEAD only
     @PutMapping("/{requestId}/approve")
     public ResponseEntity<?> approveRequest(
             @PathVariable Integer requestId,
@@ -56,7 +53,6 @@ public class DepartmenRequestController {
         return ResponseEntity.ok(updated);
     }
 
-    // REJECT REQUEST — ADMIN, DEPARTMENT_HEAD only
     @PutMapping("/{requestId}/reject")
     public ResponseEntity<?> rejectRequest(
             @PathVariable Integer requestId,
@@ -72,7 +68,6 @@ public class DepartmenRequestController {
         return ResponseEntity.ok(updated);
     }
 
-    // MARK PROCESSING — WAREHOUSE only
     @PutMapping("/{requestId}/process")
     public ResponseEntity<?> markProcessing(
             @PathVariable Integer requestId,
@@ -91,7 +86,6 @@ public class DepartmenRequestController {
         }
     }
 
-    // MARK COMPLETED — WAREHOUSE only
     @PutMapping("/{requestId}/complete")
     public ResponseEntity<?> markCompleted(
             @PathVariable Integer requestId,
@@ -110,8 +104,7 @@ public class DepartmenRequestController {
         }
     }
 
-    // VIEW REQUEST — ADMIN, DEPARTMENT_HEAD, DOCTOR, NURSE
-    // required=false so internal Feign calls (report-audit-service) also work
+
     @GetMapping("/{requestId}")
     public ResponseEntity<?> viewRequest(
             @PathVariable Integer requestId,
@@ -129,14 +122,12 @@ public class DepartmenRequestController {
         return ResponseEntity.ok(service.view(requestId));
     }
 
-    // GET ALL — ADMIN, DEPARTMENT_HEAD, WAREHOUSE
-    // DOCTOR / NURSE can also call this; frontend filters to show only their own requests
-    // required=false so internal Feign calls (report-audit-service, kpi-service) also work
+  
     @GetMapping
     public ResponseEntity<?> getAllRequests(
             @RequestHeader(value = "X-Auth-Role", required = false) String role) {
 
-        // Allow internal service-to-service calls (no role header) through
+
         if (role != null && !"ADMIN".equals(role)
                 && !"DEPARTMENT_HEAD".equals(role)
                 && !"WAREHOUSE".equals(role)

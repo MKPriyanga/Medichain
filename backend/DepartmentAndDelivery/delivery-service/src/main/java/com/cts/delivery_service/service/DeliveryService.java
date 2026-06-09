@@ -39,7 +39,6 @@ public class DeliveryService {
         this.warehouseInventoryClient = warehouseInventoryClient;
     }
 
-    // CREATE DELIVERY
     public DeliveryResponseDto createDelivery(DeliveryCreateDto dto, String deliveredBy) {
 
         if (dto.getQuantity() <= 0) {
@@ -50,7 +49,6 @@ public class DeliveryService {
             throw new InvalidRequestException("Warehouse ID is required.");
         }
 
-        // VALIDATE request exists and is APPROVED or PROCESSING
         DepartmentRequestDto request = requestClient.getRequest(dto.getRequestId());
         if (request == null) {
             throw new InvalidRequestException(
@@ -62,14 +60,12 @@ public class DeliveryService {
                     + request.getStatus());
         }
 
-        // VALIDATE quantity matches approved request quantity
         if (!dto.getQuantity().equals(request.getQuantity())) {
             throw new InvalidRequestException(
                     "Delivery quantity must match approved request quantity: "
                     + request.getQuantity());
         }
 
-        // CHECK no duplicate delivery for same request
         if (deliveryRepo.existsByRequestId(dto.getRequestId())) {
             throw new InvalidRequestException(
                     "Delivery already exists for this request");
@@ -85,10 +81,8 @@ public class DeliveryService {
 
         DeliveryRecord saved = deliveryRepo.save(delivery);
 
-        // REDUCE INVENTORY — dispatch each product listed in the request
         dispatchStock(request, dto.getWarehouseId(), dto.getQuantity());
 
-        // NOTIFY — alert department HEAD using headId
         if (request.getHeadId() != null) {
             notificationClient.sendNotification(new NotificationRequestDto(
                     request.getHeadId().longValue(),
@@ -103,21 +97,16 @@ public class DeliveryService {
         return mapToResponse(saved);
     }
 
-    /**
-     * Parse productIdsJson (e.g. "1" or "1,2,3") and call dispatch for each product.
-     * If warehouse service is unavailable the fallback returns null — we log and continue
-     * so the delivery is still recorded.
-     */
+   
     private void dispatchStock(DepartmentRequestDto request, Long warehouseId, int totalQty) {
         if (request.getProductIdsJson() == null || request.getProductIdsJson().isBlank()) {
             log.warn("No productIdsJson on request #{} — skipping inventory dispatch", request.getRequestId());
             return;
         }
 
-        // Strip surrounding brackets/spaces e.g. "[1, 2]" → "1,2"
         String productIdsJson = request.getProductIdsJson().replaceAll("[\\[\\]\\s]", "");
         String[] parts = productIdsJson.split(",");
-        int perProduct = totalQty / parts.length; // distribute evenly
+        int perProduct = totalQty / parts.length; 
         int remainder  = totalQty % parts.length;
 
         for (int i = 0; i < parts.length; i++) {
@@ -125,7 +114,7 @@ public class DeliveryService {
             if (idStr.isEmpty()) continue;
             try {
                 long productId = Long.parseLong(idStr);
-                int qty = perProduct + (i == 0 ? remainder : 0); // give remainder to first product
+                int qty = perProduct + (i == 0 ? remainder : 0); 
                 if (qty <= 0) continue;
 
                 DispatchRequestDto dispatchDto = new DispatchRequestDto(warehouseId, productId, qty);
@@ -142,7 +131,6 @@ public class DeliveryService {
         }
     }
 
-    // LIST DELIVERIES
     public List<DeliveryResponseDto> listDeliveries(Integer requestId) {
 
         List<DeliveryRecord> records =
@@ -155,7 +143,6 @@ public class DeliveryService {
                 .collect(Collectors.toList());
     }
 
-    // CLOSE DELIVERY — called by DEPARTMENT_HEAD to confirm receipt
     public DeliveryResponseDto closeRequest(Integer deliveryId) {
 
         DeliveryRecord delivery = deliveryRepo.findById(deliveryId)
@@ -171,7 +158,7 @@ public class DeliveryService {
         delivery.setStatus("CLOSED");
         DeliveryRecord saved = deliveryRepo.save(delivery);
 
-        // FETCH request to get headId for notification
+
         DepartmentRequestDto request = requestClient.getRequest(delivery.getRequestId());
 
         if (request != null && request.getHeadId() != null) {
@@ -188,7 +175,7 @@ public class DeliveryService {
         return mapToResponse(saved);
     }
 
-    // GET BY ID
+
     public DeliveryResponseDto getDeliveryById(Integer deliveryId) {
         DeliveryRecord record = deliveryRepo.findById(deliveryId)
                 .orElseThrow(() ->
@@ -196,7 +183,7 @@ public class DeliveryService {
         return mapToResponse(record);
     }
 
-    // MAPPER
+
     private DeliveryResponseDto mapToResponse(DeliveryRecord delivery) {
         return new DeliveryResponseDto(
                 delivery.getDeliveryId(),

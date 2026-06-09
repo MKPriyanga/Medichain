@@ -20,7 +20,6 @@ public class DepartmentController {
         this.service = service;
     }
 
-    // CREATE DEPARTMENT — ADMIN only
     @PostMapping
     public ResponseEntity<?> createDepartment(
             @RequestBody DepartmentRequestDto dto,
@@ -35,7 +34,6 @@ public class DepartmentController {
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
-    // UPDATE DEPARTMENT — ADMIN only
     @PutMapping("/{id}")
     public ResponseEntity<?> updateDepartment(
             @PathVariable Integer id,
@@ -51,13 +49,11 @@ public class DepartmentController {
         return ResponseEntity.ok(updated);
     }
 
-    // GET ALL — ALL roles
     @GetMapping
     public ResponseEntity<List<DepartmentResponseDto>> getAllDepartments() {
         return ResponseEntity.ok(service.getAllDepartments());
     }
 
-    // GET BY ID — ALL roles
     @GetMapping("/{id}")
     public ResponseEntity<DepartmentResponseDto> getDepartment(
             @PathVariable Integer id) {

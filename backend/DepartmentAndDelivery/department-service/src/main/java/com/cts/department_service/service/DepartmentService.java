@@ -19,7 +19,6 @@ public class DepartmentService {
         this.repository = repository;
     }
 
-    // CREATE
     public DepartmentResponseDto createDepartment(DepartmentRequestDto dto) {
 
         if (dto.getName() == null || dto.getName().trim().isEmpty()) {
@@ -30,7 +29,6 @@ public class DepartmentService {
             throw new InvalidRequestException("Department already exists");
         }
 
-        // VALIDATE headId is not already assigned to another department
         if (dto.getHeadId() != null && repository.existsByHeadId(dto.getHeadId())) {
             throw new InvalidRequestException(
                     "HeadId " + dto.getHeadId() +
@@ -48,14 +46,12 @@ public class DepartmentService {
         return mapToResponse(saved);
     }
 
-    // UPDATE DEPARTMENT
     public DepartmentResponseDto updateDepartment(Integer id, DepartmentRequestDto dto) {
 
         Department department = repository.findById(id)
                 .orElseThrow(() ->
                         new InvalidRequestException("Department not found"));
 
-        // VALIDATE new headId is not assigned to another department
         if (dto.getHeadId() != null &&
                 repository.existsByHeadIdAndDepartmentIdNot(dto.getHeadId(), id)) {
             throw new InvalidRequestException(
@@ -72,7 +68,6 @@ public class DepartmentService {
         return mapToResponse(saved);
     }
 
-    // GET BY ID
     public DepartmentResponseDto getDepartmentById(Integer id) {
 
         Department dept = repository.findById(id)
@@ -82,7 +77,6 @@ public class DepartmentService {
         return mapToResponse(dept);
     }
 
-    // GET ALL
     public List<DepartmentResponseDto> getAllDepartments() {
         return repository.findAll()
                 .stream()
@@ -90,7 +84,6 @@ public class DepartmentService {
                 .collect(Collectors.toList());
     }
 
-    // MAPPER
     private DepartmentResponseDto mapToResponse(Department dept) {
         return new DepartmentResponseDto(
                 dept.getDepartmentId(),
